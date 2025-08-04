@@ -9,7 +9,7 @@ import {
 
 document.addEventListener('DOMContentLoaded', async () => {
   const profile = await getUserProfile()
-  if (!profile || profile.role !== 'admin') {
+  if (!profile || !profile.is_admin) {
     window.location.href = '/'
     return
   }
