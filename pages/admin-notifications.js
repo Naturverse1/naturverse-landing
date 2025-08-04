@@ -26,37 +26,39 @@ export default function AdminNotifications() {
   if (loading) return <div>Loading...</div>
 
   return (
-    <div>
+    <div style={{ display: 'flex' }}>
       <AdminNavbar />
-      <h1>Notifications</h1>
-      <ul style={{ listStyle: 'none', padding: 0 }}>
-        {notifications.map((n) => (
-          <li
-            key={n.id}
-            style={{
-              backgroundColor: n.read ? 'white' : '#eef',
-              marginBottom: '1rem',
-              padding: '1rem',
-              border: '1px solid #ccc',
-            }}
-          >
-            <div style={{ fontWeight: 'bold' }}>{n.title}</div>
-            <div>{n.message}</div>
-            <span
+      <main style={{ flex: 1, padding: '1rem' }}>
+        <h1>Notifications</h1>
+        <ul style={{ listStyle: 'none', padding: 0 }}>
+          {notifications.map((n) => (
+            <li
+              key={n.id}
               style={{
-                display: 'inline-block',
-                margin: '0.5rem 0',
-                padding: '0.25rem 0.5rem',
+                backgroundColor: n.read ? 'white' : '#eef',
+                marginBottom: '1rem',
+                padding: '1rem',
                 border: '1px solid #ccc',
-                borderRadius: '4px',
               }}
             >
-              {n.type}
-            </span>
-            <div>{new Date(n.created_at).toLocaleString()}</div>
-          </li>
-        ))}
-      </ul>
+              <div style={{ fontWeight: 'bold' }}>{n.title}</div>
+              <div>{n.message}</div>
+              <span
+                style={{
+                  display: 'inline-block',
+                  margin: '0.5rem 0',
+                  padding: '0.25rem 0.5rem',
+                  border: '1px solid #ccc',
+                  borderRadius: '4px',
+                }}
+              >
+                {n.type}
+              </span>
+              <div>{new Date(n.created_at).toLocaleString()}</div>
+            </li>
+          ))}
+        </ul>
+      </main>
     </div>
   )
 }

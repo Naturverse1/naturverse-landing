@@ -26,29 +26,31 @@ export default function AdminQuizResults() {
   if (loading) return <div>Loading...</div>
 
   return (
-    <div>
+    <div style={{ display: 'flex' }}>
       <AdminNavbar />
-      <h1>Quiz Results</h1>
-      <table>
-        <thead>
-          <tr>
-            <th>User</th>
-            <th>Quiz</th>
-            <th>Score</th>
-            <th>Completed At</th>
-          </tr>
-        </thead>
-        <tbody>
-          {results.map((r, idx) => (
-            <tr key={idx}>
-              <td>{r.users?.username}</td>
-              <td>{r.quizzes?.title}</td>
-              <td>{r.score}</td>
-              <td>{new Date(r.completed_at).toLocaleString()}</td>
+      <main style={{ flex: 1, padding: '1rem' }}>
+        <h1>Quiz Results</h1>
+        <table>
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Quiz</th>
+              <th>Score</th>
+              <th>Completed At</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {results.map((r, idx) => (
+              <tr key={idx}>
+                <td>{r.users?.username}</td>
+                <td>{r.quizzes?.title}</td>
+                <td>{r.score}</td>
+                <td>{new Date(r.completed_at).toLocaleString()}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </main>
     </div>
   )
 }

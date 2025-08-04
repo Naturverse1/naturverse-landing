@@ -26,29 +26,31 @@ export default function AdminFeedback() {
   if (loading) return <div>Loading...</div>
 
   return (
-    <div>
+    <div style={{ display: 'flex' }}>
       <AdminNavbar />
-      <h1>Feedback</h1>
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Message</th>
-            <th>Date</th>
-          </tr>
-        </thead>
-        <tbody>
-          {feedback.map((f) => (
-            <tr key={f.id}>
-              <td>{f.name}</td>
-              <td>{f.email}</td>
-              <td>{f.message}</td>
-              <td>{new Date(f.created_at).toLocaleString()}</td>
+      <main style={{ flex: 1, padding: '1rem' }}>
+        <h1>Feedback</h1>
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Message</th>
+              <th>Date</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {feedback.map((f) => (
+              <tr key={f.id}>
+                <td>{f.name}</td>
+                <td>{f.email}</td>
+                <td>{f.message}</td>
+                <td>{new Date(f.created_at).toLocaleString()}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </main>
     </div>
   )
 }
