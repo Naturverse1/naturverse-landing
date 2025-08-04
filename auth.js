@@ -60,6 +60,14 @@ export async function signIn(email, password) {
   return { user: data.user, error }
 }
 
+export async function signInWithGoogle() {
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: 'https://naturverse-homepage.vercel.app' },
+  })
+  return { data, error }
+}
+
 export async function signOut() {
   sessionStorage.removeItem('guest_user')
   await supabase.auth.signOut()
