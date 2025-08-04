@@ -1,10 +1,6 @@
-import { createClient } from '@supabase/supabase-js'
+import { supabase } from './supabaseClient.js'
 
-const supabaseUrl = 'https://gxewpstvuoofdqanhjzi.supabase.co'
-const supabaseKey = 'sb_publishable_BDdV5w6oEVsrnwBL5f-zhw_Xdjkm7ip'
-const supabase = createClient(supabaseUrl, supabaseKey)
-
-async function testSupabase() {
+export async function testSupabase() {
   const { data, error } = await supabase.from('test_logs').select('*')
 
   if (error) {
@@ -16,6 +12,4 @@ async function testSupabase() {
     })
   }
 }
-
-testSupabase()
 
