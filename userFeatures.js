@@ -1,5 +1,11 @@
 import { supabase } from './supabaseClient.js'
 
+export async function logActivity(userId, type, message) {
+  await supabase
+    .from('activity_feed')
+    .insert({ user_id: userId, type, message })
+}
+
 export async function uploadAvatar(file) {
   const {
     data: { user },
@@ -75,6 +81,8 @@ export async function submitQuizAttempt(
     score,
   })
 
+  await logActivity(user.id, 'quiz', `Completed quiz ${quizTitle || quizId}`)
+
   if (percentage >= threshold && region && quizTitle) {
     await awardStamp(region, `Quiz Mastery: ${quizTitle}`)
     await sendNotification(
@@ -121,6 +129,42 @@ export async function createLearningModule(module) {
     .single()
 
   return { data, error }
+}
+
+export async function updateLearningModule(moduleId, updates) {
+  const { data, error } = await supabase
+    .from('learning_modules')
+    .update(updates)
+    .eq('id', moduleId)
+    .select()
+    .single()
+  return { data, error }
+}
+
+export async function deleteLearningModule(moduleId) {
+  const { error } = await supabase
+    .from('learning_modules')
+    .delete()
+    .eq('id', moduleId)
+  return { error }
+}
+
+export async function updateQuiz(quizId, updates) {
+  const { data, error } = await supabase
+    .from('quizzes')
+    .update(updates)
+    .eq('id', quizId)
+    .select()
+    .single()
+  return { data, error }
+}
+
+export async function deleteQuiz(quizId) {
+  const { error } = await supabase
+    .from('quizzes')
+    .delete()
+    .eq('id', quizId)
+  return { error }
 }
 
 export async function updateProfile({ username, avatar_url }) {
@@ -170,6 +214,8 @@ export async function awardStamp(region, stamp_name) {
     .insert({ user_id: user.id, region, stamp_name })
     .select()
 
+  await logActivity(user.id, 'stamp', `Earned stamp ${stamp_name}`)
+
   return { data: data ? data[0] : null, error }
 }
 
@@ -199,6 +245,9 @@ export async function submitFeedback(message, rating) {
   const { error } = await supabase
     .from('feedback')
     .insert({ user_id: user.id, message, rating })
+  if (!error) {
+    await logActivity(user.id, 'feedback', 'Submitted feedback')
+  }
   return { error }
 }
 
@@ -213,12 +262,29 @@ export async function loadModulesByRegion(region) {
   return { data: modules, error }
 }
 
+export async function searchContent(searchTerm) {
+  const [moduleRes, quizRes] = await Promise.all([
+    supabase
+      .from('learning_modules')
+      .select('*')
+      .textSearch('title', searchTerm),
+    supabase.from('quizzes').select('*').textSearch('title', searchTerm),
+  ])
+
+  return {
+    modules: moduleRes.data || [],
+    quizzes: quizRes.data || [],
+    errors: [moduleRes.error, quizRes.error].filter(Boolean),
+  }
+}
+
 export async function loadDashboard(userId) {
   const [
     { data: avatarData, error: avatarError },
     { data: stampData, error: stampError },
     { data: quizData, error: quizError },
     { data: notificationData, error: notificationError },
+    { data: activityData, error: activityError },
   ] = await Promise.all([
     supabase.from('users').select('avatar_url').eq('id', userId).single(),
     supabase.from('stamps').select('*').eq('user_id', userId),
@@ -233,14 +299,24 @@ export async function loadDashboard(userId) {
       .select('*')
       .eq('user_id', userId)
       .eq('is_read', false),
+    supabase
+      .from('activity_feed')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false }),
   ])
   return {
     avatar: avatarData ? avatarData.avatar_url : null,
     stamps: stampData || [],
     quizAttempts: quizData || [],
     notifications: notificationData || [],
-    errors: [avatarError, stampError, quizError, notificationError].filter(
-      Boolean
-    ),
+    activity: activityData || [],
+    errors: [
+      avatarError,
+      stampError,
+      quizError,
+      notificationError,
+      activityError,
+    ].filter(Boolean),
   }
 }
