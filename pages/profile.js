@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient.js'
 import { uploadAvatar } from '../userFeatures.js'
+import ProgressBar from '../components/ProgressBar.js'
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState(null)
-  const [stats, setStats] = useState({ quizzes: 0, stamps: 0 })
+  const [stats, setStats] = useState({ quizzes: 0, stamps: 0, modules: 0 })
   const [avatarUrl, setAvatarUrl] = useState(null)
   const [uploading, setUploading] = useState(false)
 
@@ -14,7 +15,12 @@ export default function ProfilePage() {
         data: { user },
       } = await supabase.auth.getUser()
       if (!user) return
-      const [{ data: userData }, { data: quizData }, { data: stampData }] = await Promise.all([
+      const [
+        { data: userData },
+        { data: quizData },
+        { data: stampData },
+        { data: moduleData },
+      ] = await Promise.all([
         supabase
           .from('users')
           .select('username, email, avatar_url')
@@ -22,10 +28,15 @@ export default function ProfilePage() {
           .single(),
         supabase.from('user_quiz_attempts').select('id').eq('user_id', user.id),
         supabase.from('stamps').select('id').eq('user_id', user.id),
+        supabase.from('learning_modules').select('id'),
       ])
       setProfile(userData)
       setAvatarUrl(userData?.avatar_url || null)
-      setStats({ quizzes: quizData?.length || 0, stamps: stampData?.length || 0 })
+      setStats({
+        quizzes: quizData?.length || 0,
+        stamps: stampData?.length || 0,
+        modules: moduleData?.length || 0,
+      })
     }
     load()
   }, [])
@@ -44,6 +55,10 @@ export default function ProfilePage() {
   return (
     <div style={{ padding: '1rem' }}>
       <h1>Profile</h1>
+      <ProgressBar
+        totalModules={stats.modules}
+        completedModules={stats.stamps}
+      />
       <div style={{ marginBottom: '1rem' }}>
         {avatarUrl ? (
           <img

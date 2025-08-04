@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/router'
 import { supabase } from '../supabaseClient.js'
+import Footer from '../components/Footer.js'
 
 export default function MyApp({ Component, pageProps }) {
   const [avatarUrl, setAvatarUrl] = useState(null)
+  const router = useRouter()
 
   useEffect(() => {
     async function load() {
@@ -19,6 +22,32 @@ export default function MyApp({ Component, pageProps }) {
     }
     load()
   }, [])
+
+  useEffect(() => {
+    const protectedPaths = [
+      '/avatar',
+      '/map',
+      '/profile',
+      '/quiz',
+      '/region',
+      '/modules',
+      '/my-stamps',
+      '/quiz-results',
+    ]
+    const checkAuth = async (url) => {
+      const path = typeof url === 'string' ? url : router.pathname
+      if (!protectedPaths.some((p) => path.startsWith(p))) return
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+      if (!user) router.replace('/login')
+    }
+    checkAuth(router.pathname)
+    router.events.on('routeChangeComplete', checkAuth)
+    return () => {
+      router.events.off('routeChangeComplete', checkAuth)
+    }
+  }, [router])
 
   return (
     <>
@@ -55,6 +84,7 @@ export default function MyApp({ Component, pageProps }) {
         </a>
       </nav>
       <Component {...pageProps} />
+      <Footer />
     </>
   )
 }
