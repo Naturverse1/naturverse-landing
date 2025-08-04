@@ -13,6 +13,7 @@ export default function CreateQuiz() {
   const [category, setCategory] = useState('')
   const [region, setRegion] = useState('')
   const [questions, setQuestions] = useState('')
+  const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -31,11 +32,13 @@ export default function CreateQuiz() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    setSubmitting(true)
     let parsed
     try {
       parsed = questions ? JSON.parse(questions) : []
     } catch (e) {
       alert('Invalid questions JSON')
+      setSubmitting(false)
       return
     }
     const { error } = await supabase.from('quizzes').insert({
@@ -48,6 +51,7 @@ export default function CreateQuiz() {
     if (!error) {
       router.push('/admin/dashboard')
     }
+    setSubmitting(false)
   }
 
   if (loading) return <div>Loading...</div>
@@ -86,7 +90,9 @@ export default function CreateQuiz() {
           rows={10}
           required
         />
-        <button type="submit">Create Quiz</button>
+        <button type="submit" disabled={submitting}>
+          {submitting ? 'Submitting...' : 'Create Quiz'}
+        </button>
       </form>
     </main>
   )

@@ -118,6 +118,7 @@ export default function ProfilePage() {
         </div>
         <div style={{ margin: '1rem 0' }}>
           <input type="file" onChange={handleAvatar} disabled={uploading} />
+          {uploading && <p>Uploading...</p>}
         </div>
         <div style={{ marginBottom: '0.5rem' }}>
           <label>Username</label>

@@ -10,6 +10,8 @@ export default function AdminRegions() {
   const [usedRegions, setUsedRegions] = useState([])
   const [regions, setRegions] = useState([])
   const [newRegion, setNewRegion] = useState({ name: '', color: '', icon_url: '' })
+  const [adding, setAdding] = useState(false)
+  const [savingId, setSavingId] = useState(null)
 
   useEffect(() => {
     async function load() {
@@ -42,6 +44,7 @@ export default function AdminRegions() {
 
   const saveRegion = async (id) => {
     const region = regions.find((r) => r.id === id)
+    setSavingId(id)
     const { data, error } = await supabase
       .from('regions')
       .update({ color: region.color, icon_url: region.icon_url })
@@ -51,10 +54,12 @@ export default function AdminRegions() {
     if (!error) {
       setRegions((prev) => prev.map((r) => (r.id === id ? data : r)))
     }
+    setSavingId(null)
   }
 
   const addRegion = async (e) => {
     e.preventDefault()
+    setAdding(true)
     const { data, error } = await supabase
       .from('regions')
       .insert(newRegion)
@@ -64,6 +69,7 @@ export default function AdminRegions() {
       setRegions((prev) => [...prev, data])
       setNewRegion({ name: '', color: '', icon_url: '' })
     }
+    setAdding(false)
   }
 
   if (loading) return <div>Loading...</div>
@@ -100,7 +106,9 @@ export default function AdminRegions() {
               onChange={(e) => setNewRegion({ ...newRegion, icon_url: e.target.value })}
               placeholder="Icon URL"
             />
-            <button type="submit">Add</button>
+            <button type="submit" disabled={adding}>
+              {adding ? 'Adding...' : 'Add'}
+            </button>
           </form>
           <div style={{ marginTop: '1rem' }}>
             {regions.map((r) => (
@@ -118,8 +126,12 @@ export default function AdminRegions() {
                   placeholder="Icon URL"
                   style={{ marginLeft: '0.5rem' }}
                 />
-                <button onClick={() => saveRegion(r.id)} style={{ marginLeft: '0.5rem' }}>
-                  Save
+                <button
+                  onClick={() => saveRegion(r.id)}
+                  style={{ marginLeft: '0.5rem' }}
+                  disabled={savingId === r.id}
+                >
+                  {savingId === r.id ? 'Saving...' : 'Save'}
                 </button>
               </div>
             ))}

@@ -18,6 +18,7 @@ export default function CreateModule() {
     quiz_id: '',
     media_urls: '',
   })
+  const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -36,11 +37,13 @@ export default function CreateModule() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    setSubmitting(true)
     let urls
     try {
       urls = form.media_urls ? JSON.parse(form.media_urls) : []
     } catch (e) {
       alert('Invalid media URLs JSON')
+      setSubmitting(false)
       return
     }
     const module = {
@@ -56,6 +59,7 @@ export default function CreateModule() {
     if (!error) {
       router.push('/admin/dashboard')
     }
+    setSubmitting(false)
   }
 
   if (loading) return <div>Loading...</div>
@@ -120,7 +124,9 @@ export default function CreateModule() {
           onChange={(e) => setForm({ ...form, media_urls: e.target.value })}
           placeholder='Media URLs JSON (e.g. ["url1"])'
         />
-        <button type="submit">Create Module</button>
+        <button type="submit" disabled={submitting}>
+          {submitting ? 'Submitting...' : 'Create Module'}
+        </button>
       </form>
     </main>
   )

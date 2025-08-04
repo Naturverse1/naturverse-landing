@@ -12,6 +12,7 @@ export default function AdminNotifications() {
   const [title, setTitle] = useState('')
   const [message, setMessage] = useState('')
   const [target, setTarget] = useState('all')
+  const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -33,6 +34,7 @@ export default function AdminNotifications() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    setSubmitting(true)
     const payloads = []
     if (target === 'all') {
       payloads.push(
@@ -64,6 +66,7 @@ export default function AdminNotifications() {
     setTitle('')
     setMessage('')
     setTarget('all')
+    setSubmitting(false)
   }
 
   if (loading) return <div>Loading...</div>
@@ -102,7 +105,9 @@ export default function AdminNotifications() {
               ))}
             </select>
           </div>
-          <button type="submit">Send</button>
+          <button type="submit" disabled={submitting}>
+            {submitting ? 'Submitting...' : 'Send'}
+          </button>
         </form>
         <ul style={{ listStyle: 'none', padding: 0 }}>
           {notifications.map((n) => (
