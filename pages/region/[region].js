@@ -1,6 +1,7 @@
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 import { supabase } from '../../supabaseClient.js'
+import ProgressBar from '../../components/ProgressBar.js'
 
 export default function RegionPage() {
   const router = useRouter()
@@ -44,9 +45,7 @@ export default function RegionPage() {
     <div style={{ padding: '1rem' }}>
       <a href="/map">Back to Map</a>
       <h1>{region}</h1>
-      <p>
-        {completed} out of {total} modules completed
-      </p>
+      <ProgressBar totalModules={total} completedModules={completed} />
       <section style={{ marginTop: '1rem' }}>
         <h2>Modules</h2>
         <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
