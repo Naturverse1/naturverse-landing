@@ -1,6 +1,9 @@
-import React from 'react'
+import React, { useState } from 'react'
+import FeedbackModal from './FeedbackModal.js'
+import { APP_VERSION } from '../version.js'
 
 export default function Footer() {
+  const [open, setOpen] = useState(false)
   return (
     <footer
       style={{
@@ -23,6 +26,9 @@ export default function Footer() {
         <a href="/contact">Contact</a>
         <a href="/terms">Terms</a>
         <a href="/privacy">Privacy</a>
+        <a style={{ cursor: 'pointer' }} onClick={() => setOpen(true)}>
+          Feedback
+        </a>
       </div>
       <div
         style={{
@@ -38,6 +44,10 @@ export default function Footer() {
           Powered by Turian Media Company
         </span>
       </div>
+      <div style={{ marginTop: '0.5rem', fontSize: '0.75rem' }}>
+        Naturverse MVP v{APP_VERSION}
+      </div>
+      {open && <FeedbackModal onClose={() => setOpen(false)} />}
     </footer>
   )
 }
