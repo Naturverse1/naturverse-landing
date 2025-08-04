@@ -10,15 +10,33 @@ export default function Footer() {
         background: '#f8f8f8',
       }}
     >
-      <div style={{ marginBottom: '0.5rem', display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-        <a href="/">Home</a>
-        <a href="/map">Map</a>
-        <a href="/profile">Profile</a>
-        <a href="/learning-with-turian">Learn</a>
+      <div
+        style={{
+          marginBottom: '0.5rem',
+          display: 'flex',
+          justifyContent: 'center',
+          gap: '1rem',
+          flexWrap: 'wrap',
+        }}
+      >
+        <a href="/about">About Naturverse</a>
+        <a href="/contact">Contact</a>
+        <a href="/terms">Terms</a>
+        <a href="/privacy">Privacy</a>
       </div>
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem' }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          gap: '0.5rem',
+          flexWrap: 'wrap',
+        }}
+      >
         <img src="/logo.png" alt="Turian logo" style={{ height: '24px' }} />
-        <span style={{ fontSize: '0.875rem' }}>© Turian Media</span>
+        <span style={{ fontSize: '0.875rem' }}>
+          Powered by Turian Media Company
+        </span>
       </div>
     </footer>
   )

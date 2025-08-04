@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 import { supabase } from '../supabaseClient.js'
 import Footer from '../components/Footer.js'
+import { getGuestUser } from '../auth.js'
 
 export default function MyApp({ Component, pageProps }) {
   const [avatarUrl, setAvatarUrl] = useState(null)
   const [isAdmin, setIsAdmin] = useState(false)
+  const [isGuest, setIsGuest] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -13,14 +15,22 @@ export default function MyApp({ Component, pageProps }) {
       const {
         data: { user },
       } = await supabase.auth.getUser()
-      if (!user) return
+      if (!user) {
+        const guest = getGuestUser()
+        if (guest) {
+          setAvatarUrl(guest.avatar_url)
+          setIsGuest(true)
+        }
+        return
+      }
       const { data } = await supabase
         .from('users')
-        .select('avatar_url, is_admin')
+        .select('avatar_url, is_admin, is_guest')
         .eq('id', user.id)
         .single()
       setAvatarUrl(data?.avatar_url || null)
       setIsAdmin(data?.is_admin || false)
+      setIsGuest(data?.is_guest || false)
     }
     load()
   }, [])
@@ -42,7 +52,7 @@ export default function MyApp({ Component, pageProps }) {
       const {
         data: { user },
       } = await supabase.auth.getUser()
-      if (!user) router.replace('/login')
+      if (!user && !getGuestUser()) router.replace('/login')
     }
     checkAuth(router.pathname)
     router.events.on('routeChangeComplete', checkAuth)
@@ -61,6 +71,9 @@ export default function MyApp({ Component, pageProps }) {
           borderBottom: '1px solid #ccc',
         }}
       >
+        <a href="/leaderboard" style={{ marginRight: '1rem' }}>
+          Leaderboard
+        </a>
         {isAdmin && (
           <a href="/admin/dashboard" style={{ marginRight: '1rem' }}>
             Admin
@@ -90,6 +103,19 @@ export default function MyApp({ Component, pageProps }) {
           )}
         </a>
       </nav>
+      {isGuest && (
+        <div
+          style={{
+            background: '#fff3cd',
+            padding: '0.5rem',
+            textAlign: 'center',
+            fontSize: '0.875rem',
+          }}
+        >
+          Your progress may be lost unless you
+          <a href="/login" style={{ marginLeft: 4 }}>create an account</a>.
+        </div>
+      )}
       <Component {...pageProps} />
       <Footer />
     </>
