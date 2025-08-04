@@ -182,7 +182,7 @@ export async function deleteQuiz(quizId) {
   return { error }
 }
 
-export async function updateProfile({ username, avatar_url }) {
+export async function updateProfile({ username, email, avatar_url }) {
   const {
     data: { user },
     error: authError,
@@ -193,6 +193,7 @@ export async function updateProfile({ username, avatar_url }) {
 
   const updates = {}
   if (username !== undefined) updates.username = username
+  if (email !== undefined) updates.email = email
   if (avatar_url !== undefined) updates.avatar_url = avatar_url
 
   const { error } = await supabase

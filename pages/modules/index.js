@@ -3,22 +3,18 @@ import { supabase } from '../../supabaseClient.js'
 
 export default function ModulesPage() {
   const [loading, setLoading] = useState(true)
-  const [grouped, setGrouped] = useState({})
+  const [modules, setModules] = useState([])
+  const [regions, setRegions] = useState([])
+  const [selectedRegion, setSelectedRegion] = useState('')
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-    const region = params.get('region')
-
     async function load() {
-      let query = supabase.from('learning_modules').select('*')
-      if (region) query = query.eq('region', region)
-      const { data } = await query
-      const groups = {}
-      ;(data || []).forEach((m) => {
-        if (!groups[m.region]) groups[m.region] = []
-        groups[m.region].push(m)
-      })
-      setGrouped(groups)
+      const { data } = await supabase.from('learning_modules').select('*')
+      setModules(data || [])
+      const unique = [
+        ...new Set((data || []).map((m) => m.region).filter(Boolean)),
+      ]
+      setRegions(unique)
       setLoading(false)
     }
     load()
@@ -26,8 +22,32 @@ export default function ModulesPage() {
 
   if (loading) return <div>Loading...</div>
 
+  const filtered = selectedRegion
+    ? modules.filter((m) => m.region === selectedRegion)
+    : modules
+  const grouped = filtered.reduce((acc, m) => {
+    if (!acc[m.region]) acc[m.region] = []
+    acc[m.region].push(m)
+    return acc
+  }, {})
+
   return (
     <div style={{ padding: '1rem' }}>
+      <div style={{ marginBottom: '1rem' }}>
+        <label htmlFor="regionFilter">Filter by region: </label>
+        <select
+          id="regionFilter"
+          value={selectedRegion}
+          onChange={(e) => setSelectedRegion(e.target.value)}
+        >
+          <option value="">All Regions</option>
+          {regions.map((r) => (
+            <option key={r} value={r}>
+              {r}
+            </option>
+          ))}
+        </select>
+      </div>
       {Object.entries(grouped).map(([region, mods]) => (
         <section key={region} style={{ marginBottom: '2rem' }}>
           <h2>{region}</h2>
@@ -55,4 +75,3 @@ export default function ModulesPage() {
     </div>
   )
 }
-

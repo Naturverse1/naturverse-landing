@@ -7,6 +7,7 @@ export default function QuizResultsPage() {
   const { attemptId } = router.query
   const [attempt, setAttempt] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [retrying, setRetrying] = useState(false)
 
   useEffect(() => {
     if (!attemptId) return
@@ -30,6 +31,22 @@ export default function QuizResultsPage() {
     ? Math.round((attempt.score / responses.length) * 100)
     : 0
 
+  const handleRetry = async () => {
+    setRetrying(true)
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (user) {
+      await supabase.from('user_quiz_attempts').insert({
+        user_id: user.id,
+        quiz_id: attempt.quiz_id,
+        responses: [],
+        score: 0,
+      })
+    }
+    router.push(`/quiz/${attempt.quiz_id}`)
+  }
+
   return (
     <div style={{ padding: '1rem' }}>
       <h1>{attempt.quizzes?.title || 'Quiz Results'}</h1>
@@ -45,9 +62,9 @@ export default function QuizResultsPage() {
           </li>
         ))}
       </ul>
-      {percentage < 70 && (
-        <a href={`/quiz/${attempt.quiz_id}`}>Retry Quiz</a>
-      )}
+      <button onClick={handleRetry} disabled={retrying}>
+        {retrying ? 'Starting...' : 'Try Again'}
+      </button>
     </div>
   )
 }
