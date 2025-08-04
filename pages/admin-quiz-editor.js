@@ -11,6 +11,7 @@ export default function AdminQuizEditor() {
   const [selected, setSelected] = useState(null)
   const [title, setTitle] = useState('')
   const [json, setJson] = useState('')
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -46,6 +47,7 @@ export default function AdminQuizEditor() {
       alert('Invalid JSON')
       return
     }
+    setSaving(true)
     if (selected) {
       const { error } = await supabase
         .from('quizzes')
@@ -67,6 +69,7 @@ export default function AdminQuizEditor() {
         setSelected(data)
       }
     }
+    setSaving(false)
   }
 
   if (loading) return <div>Loading...</div>
@@ -107,8 +110,12 @@ export default function AdminQuizEditor() {
                 placeholder="Questions JSON"
               />
             </div>
-            <button onClick={handleSave} style={{ marginTop: '1rem' }}>
-              Save
+            <button
+              onClick={handleSave}
+              style={{ marginTop: '1rem' }}
+              disabled={saving}
+            >
+              {saving ? 'Saving...' : 'Save'}
             </button>
           </section>
         </div>

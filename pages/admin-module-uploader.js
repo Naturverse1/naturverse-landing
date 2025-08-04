@@ -19,6 +19,7 @@ export default function AdminModuleUploader() {
     quiz_id: '',
     files: [],
   })
+  const [uploading, setUploading] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -37,6 +38,7 @@ export default function AdminModuleUploader() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    setUploading(true)
     const uploads = []
     for (const file of form.files) {
       const filePath = `${Date.now()}_${file.name}`
@@ -68,6 +70,7 @@ export default function AdminModuleUploader() {
         files: [],
       })
     }
+    setUploading(false)
   }
 
   if (loading) return <div>Loading...</div>
@@ -134,7 +137,9 @@ export default function AdminModuleUploader() {
             multiple
             onChange={(e) => setForm({ ...form, files: e.target.files })}
           />
-          <button type="submit">Upload</button>
+          <button type="submit" disabled={uploading}>
+            {uploading ? 'Uploading...' : 'Upload'}
+          </button>
         </form>
       </main>
     </div>

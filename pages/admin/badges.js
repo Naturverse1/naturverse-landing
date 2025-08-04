@@ -9,6 +9,7 @@ export default function AdminBadges() {
   const [userId, setUserId] = useState('')
   const [region, setRegion] = useState(regions[0])
   const [status, setStatus] = useState('')
+  const [granting, setGranting] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -31,12 +32,14 @@ export default function AdminBadges() {
 
   const grant = async () => {
     if (!userId) return
+    setGranting(true)
     const { error } = await supabase.from('stamps').insert({
       user_id: userId,
       region,
       stamp_name: `${region} Badge`,
     })
     setStatus(error ? 'Error granting stamp' : 'Stamp granted!')
+    setGranting(false)
   }
 
   if (!allowed) return <div>{status}</div>
@@ -63,7 +66,9 @@ export default function AdminBadges() {
           ))}
         </select>
       </div>
-      <button onClick={grant}>Grant Stamp</button>
+      <button onClick={grant} disabled={granting}>
+        {granting ? 'Granting...' : 'Grant Stamp'}
+      </button>
       {status && <p>{status}</p>}
     </div>
   )

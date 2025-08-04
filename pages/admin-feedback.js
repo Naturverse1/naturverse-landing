@@ -11,6 +11,7 @@ export default function AdminFeedback() {
   const pageSize = 20
   const [page, setPage] = useState(0)
   const [hasMore, setHasMore] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -29,6 +30,7 @@ export default function AdminFeedback() {
   }, [router])
 
   const loadMore = async () => {
+    setLoadingMore(true)
     const from = (page + 1) * pageSize
     const to = from + pageSize - 1
     const { data } = await supabase
@@ -43,6 +45,7 @@ export default function AdminFeedback() {
     } else {
       setHasMore(false)
     }
+    setLoadingMore(false)
   }
 
   if (loading) return <div>Loading...</div>
@@ -75,8 +78,12 @@ export default function AdminFeedback() {
           </table>
         </div>
         {hasMore && (
-          <button onClick={loadMore} style={{ marginTop: '1rem' }}>
-            Load More
+          <button
+            onClick={loadMore}
+            style={{ marginTop: '1rem' }}
+            disabled={loadingMore}
+          >
+            {loadingMore ? 'Loading...' : 'Load More'}
           </button>
         )}
       </main>
