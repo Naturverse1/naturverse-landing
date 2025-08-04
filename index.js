@@ -1,5 +1,5 @@
 import { testSupabase } from './testSupabase.js'
-import { signUp, signIn, signOut } from './auth.js'
+import { signUp, signIn, signOut, getUserProfile } from './auth.js'
 
 document.addEventListener('DOMContentLoaded', () => {
   const button = document.getElementById('testButton')
@@ -13,12 +13,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('signupButton').onclick = async () => {
     const { user, error } = await signUp(emailInput.value, passwordInput.value)
-    resultText.textContent = error ? error.message : `Signed up as ${user.email}`
+    if (error) {
+      resultText.textContent = error.message
+      return
+    }
+    const profile = await getUserProfile()
+    resultText.textContent = profile
+      ? `Signed up as ${profile.email}`
+      : `Signed up as ${user.email}`
   }
 
   document.getElementById('loginButton').onclick = async () => {
     const { user, error } = await signIn(emailInput.value, passwordInput.value)
-    resultText.textContent = error ? error.message : `Logged in as ${user.email}`
+    if (error) {
+      resultText.textContent = error.message
+      return
+    }
+    const profile = await getUserProfile()
+    resultText.textContent = profile
+      ? `Logged in as ${profile.email}`
+      : `Logged in as ${user.email}`
   }
 
   document.getElementById('logoutButton').onclick = async () => {
