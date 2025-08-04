@@ -1,13 +1,18 @@
 import { useEffect, useState } from 'react'
-import { supabase } from '../supabaseClient.js'
+import { supabase } from '../../supabaseClient.js'
 
 export default function ModulesPage() {
   const [loading, setLoading] = useState(true)
   const [grouped, setGrouped] = useState({})
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const region = params.get('region')
+
     async function load() {
-      const { data } = await supabase.from('learning_modules').select('*')
+      let query = supabase.from('learning_modules').select('*')
+      if (region) query = query.eq('region', region)
+      const { data } = await query
       const groups = {}
       ;(data || []).forEach((m) => {
         if (!groups[m.region]) groups[m.region] = []
@@ -28,7 +33,10 @@ export default function ModulesPage() {
           <h2>{region}</h2>
           <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
             {mods.map((m) => (
-              <div key={m.id} style={{ border: '1px solid #ccc', padding: '0.5rem', width: '200px' }}>
+              <div
+                key={m.id}
+                style={{ border: '1px solid #ccc', padding: '0.5rem', width: '200px' }}
+              >
                 {m.media_urls && m.media_urls[0] && (
                   <img
                     src={m.media_urls[0]}
@@ -38,11 +46,7 @@ export default function ModulesPage() {
                 )}
                 <h3>{m.title}</h3>
                 <p>{m.description}</p>
-                {m.media_urls && m.media_urls[0] && (
-                  <a href={m.media_urls[0]} target="_blank" rel="noopener noreferrer">
-                    View
-                  </a>
-                )}
+                <a href={`/modules/${m.id}`}>View Module</a>
               </div>
             ))}
           </div>

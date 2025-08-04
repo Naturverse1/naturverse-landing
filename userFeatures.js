@@ -83,14 +83,16 @@ export async function submitQuizAttempt(
 
   await logActivity(user.id, 'quiz', `Completed quiz ${quizTitle || quizId}`)
 
-  if (percentage >= threshold && region && quizTitle) {
-    await awardStamp(region, `Quiz Mastery: ${quizTitle}`)
-    await sendNotification(
-      user.id,
-      'Stamp Earned!',
-      `You earned a new stamp for completing a quiz in ${region}`,
-      'success'
-    )
+  if (percentage >= threshold && region) {
+    const { alreadyAwarded } = await awardStamp(region)
+    if (!alreadyAwarded) {
+      await sendNotification(
+        user.id,
+        'Stamp Earned!',
+        `You earned a new stamp for completing a quiz in ${region}`,
+        'success'
+      )
+    }
   }
 
   return { score, percentage, error }
@@ -187,7 +189,7 @@ export async function updateProfile({ username, avatar_url }) {
   return { error }
 }
 
-export async function awardStamp(region, stamp_name) {
+export async function awardStamp(region, stamp_name = `${region} Starter Stamp`) {
   const {
     data: { user },
     error: authError,
@@ -200,7 +202,7 @@ export async function awardStamp(region, stamp_name) {
     .from('stamps')
     .select('*')
     .eq('user_id', user.id)
-    .eq('stamp_name', stamp_name)
+    .eq('region', region)
 
   if (selectError) {
     return { error: selectError }
