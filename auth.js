@@ -1,26 +1,35 @@
 import { supabase } from './supabaseClient.js'
 
-async function saveProfile(user) {
-  const { data: existingProfile, error: fetchError } = await supabase
+export async function saveUserProfile(user) {
+  const { id, email } = user
+  const { error } = await supabase.from('users').upsert({ id, email })
+  if (error) {
+    console.error('Error saving user profile:', error)
+  } else {
+    console.log('User profile saved')
+  }
+  return { error }
+}
+
+export async function getUserProfile() {
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser()
+  if (authError) {
+    console.error('Error getting current user:', authError)
+    return null
+  }
+  const { data, error } = await supabase
     .from('users')
-    .select('id')
+    .select('*')
     .eq('id', user.id)
-
-  if (fetchError) {
-    return fetchError
+    .single()
+  if (error) {
+    console.error('Error fetching user profile:', error)
+    return null
   }
-
-  if (existingProfile.length === 0) {
-    const { error: insertError } = await supabase.from('users').insert({
-      id: user.id,
-      email: user.email,
-      created_at: new Date().toISOString(),
-      username: user.user_metadata?.username,
-    })
-    return insertError
-  }
-
-  return null
+  return data
 }
 
 export async function signUp(email, password) {
@@ -28,11 +37,10 @@ export async function signUp(email, password) {
     email,
     password,
   })
-  let profileError = null
   if (!error && data.user) {
-    profileError = await saveProfile(data.user)
+    await saveUserProfile(data.user)
   }
-  return { user: data.user, error: error || profileError }
+  return { user: data.user, error }
 }
 
 export async function signIn(email, password) {
@@ -40,11 +48,10 @@ export async function signIn(email, password) {
     email,
     password,
   })
-  let profileError = null
   if (!error && data.user) {
-    profileError = await saveProfile(data.user)
+    await saveUserProfile(data.user)
   }
-  return { user: data.user, error: error || profileError }
+  return { user: data.user, error }
 }
 
 export async function signOut() {
