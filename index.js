@@ -1,5 +1,5 @@
 import { testSupabase } from './testSupabase.js'
-import { signUp, signIn, signOut, getUserProfile } from './auth.js'
+import { signUp, signIn, signOut, signInWithGoogle } from './auth.js'
 import { searchContent } from './userFeatures.js'
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -12,33 +12,48 @@ document.addEventListener('DOMContentLoaded', () => {
   const passwordInput = document.getElementById('password')
   const resultText = document.getElementById('authResult')
 
-  document.getElementById('signupButton').onclick = async () => {
-    const { user, error } = await signUp(emailInput.value, passwordInput.value)
+  const signupButton = document.getElementById('signupButton')
+  const loginButton = document.getElementById('loginButton')
+  const googleButton = document.getElementById('googleLoginButton')
+  const logoutButton = document.getElementById('logoutButton')
+
+  signupButton.onclick = async () => {
+    signupButton.disabled = true
+    signupButton.textContent = 'Submitting...'
+    const { error } = await signUp(emailInput.value, passwordInput.value)
     if (error) {
       resultText.textContent = error.message
+      signupButton.disabled = false
+      signupButton.textContent = 'Sign Up'
       return
     }
-    const profile = await getUserProfile()
-    resultText.textContent = profile
-      ? `Signed up as ${profile.email}`
-      : `Signed up as ${user.email}`
+    window.location.href = '/'
   }
 
-  document.getElementById('loginButton').onclick = async () => {
-    const { user, error } = await signIn(emailInput.value, passwordInput.value)
+  loginButton.onclick = async () => {
+    loginButton.disabled = true
+    loginButton.textContent = 'Submitting...'
+    const { error } = await signIn(emailInput.value, passwordInput.value)
     if (error) {
       resultText.textContent = error.message
+      loginButton.disabled = false
+      loginButton.textContent = 'Log In'
       return
     }
-    const profile = await getUserProfile()
-    resultText.textContent = profile
-      ? `Logged in as ${profile.email}`
-      : `Logged in as ${user.email}`
+    window.location.href = '/'
   }
 
-  document.getElementById('logoutButton').onclick = async () => {
+  googleButton.onclick = async () => {
+    googleButton.disabled = true
+    googleButton.textContent = 'Redirecting...'
+    await signInWithGoogle()
+  }
+
+  logoutButton.onclick = async () => {
+    logoutButton.disabled = true
     await signOut()
     resultText.textContent = 'Logged out'
+    logoutButton.disabled = false
   }
 
   const searchInput = document.getElementById('globalSearch')

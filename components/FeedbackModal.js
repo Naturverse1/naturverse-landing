@@ -6,10 +6,13 @@ export default function FeedbackModal({ onClose }) {
   const [message, setMessage] = useState('')
   const [email, setEmail] = useState('')
   const [submitted, setSubmitted] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    setSubmitting(true)
     await submitFeedback({ type, message, email })
+    setSubmitting(false)
     setSubmitted(true)
   }
 
@@ -68,7 +71,9 @@ export default function FeedbackModal({ onClose }) {
               </label>
             </div>
             <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <button type="submit">Submit</button>
+              <button type="submit" disabled={submitting}>
+                {submitting ? 'Submitting...' : 'Submit'}
+              </button>
               <button type="button" onClick={onClose}>
                 Cancel
               </button>
