@@ -75,24 +75,8 @@
   <h1>🌍 Welcome to The Naturverse™</h1>
   <p>A Magical World of Learning</p>
   <button class="coming-soon-button">Coming Soon</button>
-  <button id="test-supabase" class="test-supabase-button">Test Supabase</button>
+  <button class="test-supabase-button">Test Supabase</button>
 
-  <script type="module">
-    import { supabase } from './supabaseClient.js'
-
-    const button = document.getElementById('test-supabase')
-    button.addEventListener('click', async () => {
-      const { error } = await supabase.from('test_logs').insert({
-        message: 'Hello from the homepage!',
-        timestamp: new Date().toISOString()
-      })
-
-      if (error) {
-        console.error('Error inserting test row:', error)
-      } else {
-        console.log('Test row inserted successfully')
-      }
-    })
-  </script>
+  <script type="module" src="supabaseClient.js"></script>
 </body>
 </html>
