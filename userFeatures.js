@@ -115,10 +115,10 @@ export async function createLearningModule(module) {
 
   const { data: profile, error: profileError } = await supabase
     .from('users')
-    .select('role')
+    .select('is_admin')
     .eq('id', user.id)
     .single()
-  if (profileError || profile.role !== 'admin') {
+  if (profileError || !profile.is_admin) {
     return { error: profileError || new Error('Unauthorized') }
   }
 

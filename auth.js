@@ -1,8 +1,14 @@
 import { supabase } from './supabaseClient.js'
 
 export async function saveUserProfile(user) {
-  const { id, email } = user
-  const { error } = await supabase.from('users').upsert({ id, email })
+  const { id, email, user_metadata } = user
+  const { error } = await supabase
+    .from('users')
+    .upsert({
+      id,
+      email,
+      is_admin: user_metadata?.is_admin || false,
+    })
   if (error) {
     console.error('Error saving user profile:', error)
   } else {

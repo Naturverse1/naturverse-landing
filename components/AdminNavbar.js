@@ -26,6 +26,8 @@ export default function AdminNavbar() {
     { href: '/admin-notifications', label: '🔔 Notifications' },
     { href: '/admin-quiz-results', label: '📊 Quiz Results' },
     { href: '/admin-quiz-editor', label: '✏️ Quiz Editor' },
+    { href: '/admin-regions', label: '🗺️ Regions' },
+    { href: '/admin-module-uploader', label: '⬆️ Module Uploader' },
   ]
 
   return (
