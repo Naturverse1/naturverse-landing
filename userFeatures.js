@@ -49,7 +49,11 @@ export async function saveNavatar({ name, category, appearance_data, image_url }
   return { error }
 }
 
-export async function submitQuizAttempt(quizId, responses) {
+export async function submitQuizAttempt(
+  quizId,
+  responses,
+  { quizTitle, region, threshold = 70 } = {}
+) {
   const {
     data: { user },
     error: authError,
@@ -61,6 +65,8 @@ export async function submitQuizAttempt(quizId, responses) {
   const score = Array.isArray(responses)
     ? responses.reduce((total, r) => total + (r.correct ? 1 : 0), 0)
     : 0
+  const totalQuestions = Array.isArray(responses) ? responses.length : 0
+  const percentage = totalQuestions ? (score / totalQuestions) * 100 : 0
 
   const { error } = await supabase.from('user_quiz_attempts').insert({
     user_id: user.id,
@@ -69,7 +75,72 @@ export async function submitQuizAttempt(quizId, responses) {
     score,
   })
 
-  return { score, error }
+  if (percentage >= threshold && region && quizTitle) {
+    await awardStamp(region, `Quiz Mastery: ${quizTitle}`)
+    await sendNotification(
+      user.id,
+      'Stamp Earned!',
+      `You earned a new stamp for completing a quiz in ${region}`,
+      'success'
+    )
+  }
+
+  return { score, percentage, error }
+}
+
+export async function getUserStamps(userId) {
+  const { data, error } = await supabase
+    .from('stamps')
+    .select('*')
+    .eq('user_id', userId)
+  return { data: data || [], error }
+}
+
+export async function createLearningModule(module) {
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser()
+  if (authError || !user) {
+    return { error: authError || new Error('No authenticated user') }
+  }
+
+  const { data: profile, error: profileError } = await supabase
+    .from('users')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+  if (profileError || profile.role !== 'admin') {
+    return { error: profileError || new Error('Unauthorized') }
+  }
+
+  const { data, error } = await supabase
+    .from('learning_modules')
+    .insert({ ...module, created_by: user.id })
+    .select()
+    .single()
+
+  return { data, error }
+}
+
+export async function updateProfile({ username, avatar_url }) {
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser()
+  if (authError || !user) {
+    return { error: authError || new Error('No authenticated user') }
+  }
+
+  const updates = {}
+  if (username !== undefined) updates.username = username
+  if (avatar_url !== undefined) updates.avatar_url = avatar_url
+
+  const { error } = await supabase
+    .from('users')
+    .update(updates)
+    .eq('id', user.id)
+  return { error }
 }
 
 export async function awardStamp(region, stamp_name) {

@@ -55,6 +55,24 @@ export async function signIn(email, password) {
 }
 
 export async function signOut() {
+  sessionStorage.removeItem('guest_user')
   await supabase.auth.signOut()
+}
+
+export function signInAsGuest() {
+  const id = crypto.randomUUID()
+  const guestUser = {
+    id,
+    username: `Guest_${Math.floor(Math.random() * 10000)}`,
+    avatar_url: 'https://placehold.co/100x100',
+    isGuest: true,
+  }
+  sessionStorage.setItem('guest_user', JSON.stringify(guestUser))
+  return guestUser
+}
+
+export function getGuestUser() {
+  const stored = sessionStorage.getItem('guest_user')
+  return stored ? JSON.parse(stored) : null
 }
 
