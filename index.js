@@ -1,5 +1,6 @@
 import { testSupabase } from './testSupabase.js'
 import { signUp, signIn, signOut, getUserProfile } from './auth.js'
+import { searchContent } from './userFeatures.js'
 
 document.addEventListener('DOMContentLoaded', () => {
   const button = document.getElementById('testButton')
@@ -38,6 +39,23 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('logoutButton').onclick = async () => {
     await signOut()
     resultText.textContent = 'Logged out'
+  }
+
+  const searchInput = document.getElementById('globalSearch')
+  const searchButton = document.getElementById('searchButton')
+  const searchResults = document.getElementById('searchResults')
+  if (searchButton && searchInput && searchResults) {
+    searchButton.addEventListener('click', async () => {
+      const term = searchInput.value
+      const { modules, quizzes, errors } = await searchContent(term)
+      if (errors.length) {
+        searchResults.textContent = errors[0].message
+        return
+      }
+      const modList = modules.map((m) => `Module: ${m.title}`).join('<br>')
+      const quizList = quizzes.map((q) => `Quiz: ${q.title}`).join('<br>')
+      searchResults.innerHTML = [modList, quizList].filter(Boolean).join('<br>')
+    })
   }
 })
 
