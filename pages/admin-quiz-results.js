@@ -8,6 +8,8 @@ export default function AdminQuizResults() {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [results, setResults] = useState([])
+  const [sortField, setSortField] = useState(null)
+  const [sortAsc, setSortAsc] = useState(true)
 
   useEffect(() => {
     async function load() {
@@ -23,6 +25,30 @@ export default function AdminQuizResults() {
     load()
   }, [router])
 
+  const sorted = [...results]
+  if (sortField === 'user') {
+    sorted.sort((a, b) => {
+      const aVal = a.users?.username || ''
+      const bVal = b.users?.username || ''
+      return sortAsc ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal)
+    })
+  } else if (sortField === 'quiz') {
+    sorted.sort((a, b) => {
+      const aVal = a.quizzes?.title || ''
+      const bVal = b.quizzes?.title || ''
+      return sortAsc ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal)
+    })
+  }
+
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortAsc(!sortAsc)
+    } else {
+      setSortField(field)
+      setSortAsc(true)
+    }
+  }
+
   if (loading) return <div>Loading...</div>
 
   return (
@@ -33,14 +59,18 @@ export default function AdminQuizResults() {
         <table>
           <thead>
             <tr>
-              <th>User</th>
-              <th>Quiz</th>
+              <th onClick={() => handleSort('user')} style={{ cursor: 'pointer' }}>
+                User {sortField === 'user' ? (sortAsc ? '▲' : '▼') : ''}
+              </th>
+              <th onClick={() => handleSort('quiz')} style={{ cursor: 'pointer' }}>
+                Quiz {sortField === 'quiz' ? (sortAsc ? '▲' : '▼') : ''}
+              </th>
               <th>Score</th>
               <th>Completed At</th>
             </tr>
           </thead>
           <tbody>
-            {results.map((r, idx) => (
+            {sorted.map((r, idx) => (
               <tr key={idx}>
                 <td>{r.users?.username}</td>
                 <td>{r.quizzes?.title}</td>

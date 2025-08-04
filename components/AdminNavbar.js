@@ -25,6 +25,7 @@ export default function AdminNavbar() {
     { href: '/admin-feedback', label: '💬 Feedback' },
     { href: '/admin-notifications', label: '🔔 Notifications' },
     { href: '/admin-quiz-results', label: '📊 Quiz Results' },
+    { href: '/admin-quiz-editor', label: '✏️ Quiz Editor' },
   ]
 
   return (
@@ -34,7 +35,12 @@ export default function AdminNavbar() {
       </button>
       <nav className={`admin-sidebar ${open ? 'open' : ''}`}>
         {links.map((l) => (
-          <Link key={l.href} href={l.href} onClick={() => setOpen(false)}>
+          <Link
+            key={l.href}
+            href={l.href}
+            onClick={() => setOpen(false)}
+            className={router.pathname === l.href ? 'active' : ''}
+          >
             {l.label}
           </Link>
         ))}
@@ -56,6 +62,10 @@ export default function AdminNavbar() {
           border-right: 1px solid #ccc;
           min-width: 200px;
           height: 100vh;
+        }
+        .admin-sidebar .active {
+          font-weight: bold;
+          text-decoration: underline;
         }
         @media (max-width: 600px) {
           .admin-hamburger {
