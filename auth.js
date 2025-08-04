@@ -65,14 +65,21 @@ export async function signOut() {
   await supabase.auth.signOut()
 }
 
-export function signInAsGuest() {
+export async function signInAsGuest() {
   const id = crypto.randomUUID()
   const guestUser = {
     id,
-    username: `Guest_${Math.floor(Math.random() * 10000)}`,
+    username: `Guest-${Math.floor(Math.random() * 9000) + 1000}`,
     avatar_url: 'https://placehold.co/100x100',
     isGuest: true,
   }
+  const { error } = await supabase.from('users').upsert({
+    id,
+    username: guestUser.username,
+    avatar_url: guestUser.avatar_url,
+    is_guest: true,
+  })
+  if (error) console.error('Error creating guest user:', error)
   sessionStorage.setItem('guest_user', JSON.stringify(guestUser))
   return guestUser
 }
