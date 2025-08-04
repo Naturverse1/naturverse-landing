@@ -18,9 +18,11 @@ export default function AdminPanel() {
   if (loading) return <div>Loading...</div>
 
   return (
-    <div>
+    <div style={{ display: 'flex' }}>
       <AdminNavbar />
-      <h1>Admin Panel</h1>
+      <main style={{ flex: 1, padding: '1rem' }}>
+        <h1>Admin Panel</h1>
+      </main>
     </div>
   )
 }
