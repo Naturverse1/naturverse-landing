@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 import { supabase } from '../supabaseClient.js'
 import Footer from '../components/Footer.js'
+import NotificationPanel from '../components/NotificationPanel.js'
 import { getGuestUser } from '../auth.js'
 
 export default function MyApp({ Component, pageProps }) {
@@ -63,46 +64,48 @@ export default function MyApp({ Component, pageProps }) {
 
   return (
     <>
-      <nav
-        style={{
-          display: 'flex',
-          justifyContent: 'flex-end',
-          padding: '0.5rem 1rem',
-          borderBottom: '1px solid #ccc',
-        }}
-      >
-        <a href="/leaderboard" style={{ marginRight: '1rem' }}>
-          Leaderboard
-        </a>
-        {isAdmin && (
-          <a href="/admin/dashboard" style={{ marginRight: '1rem' }}>
-            Admin
-          </a>
-        )}
-        <a
-          href="/profile"
+        <nav
           style={{
-            width: 40,
-            height: 40,
-            borderRadius: '50%',
-            overflow: 'hidden',
             display: 'flex',
+            justifyContent: 'flex-end',
             alignItems: 'center',
-            justifyContent: 'center',
-            background: '#eee',
+            padding: '0.5rem 1rem',
+            borderBottom: '1px solid #ccc',
           }}
         >
-          {avatarUrl ? (
-            <img
-              src={avatarUrl}
-              alt="avatar"
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-            />
-          ) : (
-            <span style={{ fontSize: '1.5rem' }}>👤</span>
+          <a href="/leaderboard" style={{ marginRight: '1rem' }}>
+            Leaderboard
+          </a>
+          {isAdmin && (
+            <a href="/admin/dashboard" style={{ marginRight: '1rem' }}>
+              Admin
+            </a>
           )}
-        </a>
-      </nav>
+          <NotificationPanel />
+          <a
+            href="/profile"
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: '50%',
+              overflow: 'hidden',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: '#eee',
+            }}
+          >
+            {avatarUrl ? (
+              <img
+                src={avatarUrl}
+                alt="avatar"
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+            ) : (
+              <span style={{ fontSize: '1.5rem' }}>👤</span>
+            )}
+          </a>
+        </nav>
       {isGuest && (
         <div
           style={{

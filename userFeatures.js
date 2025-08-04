@@ -81,15 +81,21 @@ export async function submitQuizAttempt(
     score,
   })
 
+  await sendNotification(
+    user.id,
+    'Quiz Completed',
+    `You scored ${Math.round(percentage)}% on '${quizTitle || quizId}'!`
+  )
+
   await logActivity(user.id, 'quiz', `Completed quiz ${quizTitle || quizId}`)
 
   if (percentage >= threshold && region) {
-    const { alreadyAwarded } = await awardStamp(region)
-    if (!alreadyAwarded) {
+    const { data: stampData, alreadyAwarded } = await awardStamp(region)
+    if (!alreadyAwarded && stampData) {
       await sendNotification(
         user.id,
         'Stamp Earned!',
-        `You earned a new stamp for completing a quiz in ${region}`,
+        `You earned the ${stampData.stamp_name}!`,
         'success'
       )
     }
@@ -129,6 +135,13 @@ export async function createLearningModule(module) {
     .insert({ ...module, created_by: user.id })
     .select()
     .single()
+  if (!error && data) {
+    await sendNotification(
+      user.id,
+      'Module Unlocked',
+      `New storybook unlocked: '${data.title}'`
+    )
+  }
 
   return { data, error }
 }
@@ -236,18 +249,17 @@ export async function markNotificationAsRead(notificationId) {
   return { error }
 }
 
-export async function submitFeedback(message, rating) {
+export async function submitFeedback({ type, message, email }) {
   const {
     data: { user },
-    error: authError,
   } = await supabase.auth.getUser()
-  if (authError || !user) {
-    return { error: authError || new Error('No authenticated user') }
-  }
-  const { error } = await supabase
-    .from('feedback')
-    .insert({ user_id: user.id, message, rating })
-  if (!error) {
+  const { error } = await supabase.from('feedback').insert({
+    user_id: user ? user.id : null,
+    type,
+    message,
+    email: email || null,
+  })
+  if (!error && user) {
     await logActivity(user.id, 'feedback', 'Submitted feedback')
   }
   return { error }
