@@ -5,6 +5,7 @@ import Footer from '../components/Footer.js'
 
 export default function MyApp({ Component, pageProps }) {
   const [avatarUrl, setAvatarUrl] = useState(null)
+  const [isAdmin, setIsAdmin] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -15,10 +16,11 @@ export default function MyApp({ Component, pageProps }) {
       if (!user) return
       const { data } = await supabase
         .from('users')
-        .select('avatar_url')
+        .select('avatar_url, is_admin')
         .eq('id', user.id)
         .single()
       setAvatarUrl(data?.avatar_url || null)
+      setIsAdmin(data?.is_admin || false)
     }
     load()
   }, [])
@@ -59,6 +61,11 @@ export default function MyApp({ Component, pageProps }) {
           borderBottom: '1px solid #ccc',
         }}
       >
+        {isAdmin && (
+          <a href="/admin/dashboard" style={{ marginRight: '1rem' }}>
+            Admin
+          </a>
+        )}
         <a
           href="/profile"
           style={{
