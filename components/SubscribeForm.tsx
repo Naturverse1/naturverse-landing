@@ -1,17 +1,29 @@
-import { useState, useEffect, FormEvent } from 'react'
-// Simple subscription form component
+import { useState, useEffect, FormEvent, ChangeEvent } from 'react'
 
 export default function SubscribeForm() {
-  const [name, setName] = useState('')
   const [email, setEmail] = useState('')
-  const [status, setStatus] = useState('')
+  const [interests, setInterests] = useState<string[]>([])
+  const [message, setMessage] = useState('')
+  const [error, setError] = useState(false)
+
+  const interestOptions = ['news', 'events', 'offers']
 
   useEffect(() => {
-    if (status) {
-      const timer = setTimeout(() => setStatus(''), 5000)
+    if (message) {
+      const timer = setTimeout(() => {
+        setMessage('')
+        setError(false)
+      }, 5000)
       return () => clearTimeout(timer)
     }
-  }, [status])
+  }, [message])
+
+  const handleInterestChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { value, checked } = e.target
+    setInterests((prev) =>
+      checked ? [...prev, value] : prev.filter((i) => i !== value)
+    )
+  }
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -19,28 +31,25 @@ export default function SubscribeForm() {
       const res = await fetch('/api/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email }),
+        body: JSON.stringify({ email, interests }),
       })
 
-      if (!res.ok) throw new Error('Network response was not ok')
-      setStatus('Thanks for subscribing!')
-      setName('')
+      const data = await res.json()
+      if (!res.ok || !data.success) throw new Error(data.message || 'Network response was not ok')
+
+      setMessage('Thanks for subscribing!')
+      setError(false)
       setEmail('')
+      setInterests([])
     } catch (err) {
       console.error(err)
-      setStatus('Subscription failed. Please try again.')
+      setError(true)
+      setMessage('Subscription failed. Please try again.')
     }
   }
 
   return (
     <form onSubmit={handleSubmit} className="subscribe-form">
-      <input
-        type="text"
-        placeholder="Your name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        required
-      />
       <input
         type="email"
         placeholder="Your email"
@@ -48,9 +57,23 @@ export default function SubscribeForm() {
         onChange={(e) => setEmail(e.target.value)}
         required
       />
+      <div className="interests">
+        {interestOptions.map((option) => (
+          <label key={option}>
+            <input
+              type="checkbox"
+              value={option}
+              checked={interests.includes(option)}
+              onChange={handleInterestChange}
+            />
+            {option}
+          </label>
+        ))}
+      </div>
       <button type="submit">Subscribe</button>
-      {status && <p>{status}</p>}
+      {message && (
+        <p style={{ color: error ? 'red' : 'green' }}>{message}</p>
+      )}
     </form>
   )
 }
-
