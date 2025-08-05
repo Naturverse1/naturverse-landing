@@ -4,6 +4,7 @@ export default function EmailCaptureForm() {
   const [email, setEmail] = useState('')
   const [name, setName] = useState('')
   const [status, setStatus] = useState({ type: '', message: '' })
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     if (status.message) {
@@ -14,6 +15,7 @@ export default function EmailCaptureForm() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
+    setLoading(true)
     try {
       const res = await fetch('/api/subscribe', {
         method: 'POST',
@@ -28,6 +30,8 @@ export default function EmailCaptureForm() {
     } catch (err) {
       console.error(err)
       setStatus({ type: 'error', message: 'Failed to subscribe. Please try again.' })
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -47,7 +51,9 @@ export default function EmailCaptureForm() {
         onChange={(e) => setEmail(e.target.value)}
         required
       />
-      <button type="submit">Subscribe</button>
+      <button type="submit" disabled={loading}>
+        {loading ? 'Submitting...' : 'Subscribe'}
+      </button>
       {status.message && <p className={status.type}>{status.message}</p>}
     </form>
   )
