@@ -11,13 +11,10 @@ document.addEventListener('DOMContentLoaded', () => {
   form.addEventListener('submit', async (event) => {
     event.preventDefault()
     const email = document.getElementById('email').value.trim()
-    const name = document.getElementById('name').value.trim()
-    const age_group = document.getElementById('age_group').value.trim()
-    const interest = document.getElementById('interest').value.trim()
-    const message = document.getElementById('message').value.trim()
 
-    if (!name || !email || !age_group) {
-      alert('Please fill in your name, email, and age group.')
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$
+    if (!email || !emailPattern.test(email)) {
+      messageDiv.textContent = 'Please enter a valid email.'
       return
     }
 
@@ -27,8 +24,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let error
     try {
       ;({ error } = await supabase
-        .from('early_access_waitlist')
-        .insert({ email, name, age_group, interest, message }))
+        .from('email_captures')
+        .insert({ email }))
     } catch (e) {
       error = e
     }
@@ -37,14 +34,13 @@ document.addEventListener('DOMContentLoaded', () => {
     submitBtn.innerText = 'Join Waitlist'
 
     if (error) {
-      messageDiv.textContent = 'There was an error. Please try again.'
+      console.error(error)
+      messageDiv.textContent = 'Something went wrong.'
       return
     }
 
     form.reset()
     formContainer.style.display = 'none'
     successMessage.style.display = 'block'
-    // To redirect to a thank-you page instead of showing a message, use:
-    // window.location.href = '/thank-you.html'
   })
 })
