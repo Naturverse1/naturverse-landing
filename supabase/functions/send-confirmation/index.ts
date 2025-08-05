@@ -4,11 +4,15 @@ import { Resend } from "npm:resend";
 const resend = new Resend(Deno.env.get('RESEND_API_KEY') || "");
 
 serve(async (req: Request): Promise<Response> => {
+  if (req.method !== "POST") {
+    return new Response("Method Not Allowed", { status: 405 });
+  }
+
   try {
     const { email, name, selectedOption } = await req.json();
 
     await resend.emails.send({
-      from: "naturverse@yourdomain.com",
+      from: "no-reply@naturverse.com",
       to: email,
       subject: "🌱 Welcome to The Naturverse!",
       html: `<p>Hello ${name},</p><p>Thank you for joining the waitlist with the option: ${selectedOption}.</p>`,
