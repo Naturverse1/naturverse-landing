@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { supabase } from '../../supabaseClient';
 
 export default async function handler(
   req: NextApiRequest,
@@ -10,24 +11,25 @@ export default async function handler(
   }
 
   try {
-    const { name, email } = req.body || {};
+    const { name, email } = req.body as { name?: string; email?: string };
 
     if (!name || !email) {
       return res.status(400).json({ error: 'Name and email are required' });
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({ error: 'Invalid email format' });
+    const { error } = await supabase
+      .from('email_signups')
+      .insert([{ name, email }]);
+
+    if (error) {
+      console.error('Supabase insert error:', error);
+      return res.status(500).json({ error: 'Failed to save subscription' });
     }
 
-    console.log('Received subscription data:', { name, email });
-    // TODO: Store the subscription data or integrate with email service
-
     return res.status(200).json({ message: 'Subscription received' });
-  } catch (error) {
-    console.error('Subscription error:', error);
-    return res.status(400).json({ error: 'Unable to process subscription' });
+  } catch (err) {
+    console.error('Subscription error:', err);
+    return res.status(500).json({ error: 'Unable to process subscription' });
   }
 }
 
