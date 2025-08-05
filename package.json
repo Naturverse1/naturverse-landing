@@ -1,10 +1,10 @@
 {
-  "name": "naturverse-homepage",
-  "version": "1.0.0",
-  "description": "Local dev server for Naturverse",
   "scripts": {
     "dev": "lite-server"
   },
+  "name": "naturverse-homepage",
+  "version": "1.0.0",
+  "description": "Local dev server for Naturverse",
   "devDependencies": {
     "lite-server": "^2.6.1"
   },
