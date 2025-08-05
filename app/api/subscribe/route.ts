@@ -1,14 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-
-const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-
-if (!supabaseUrl || !supabaseKey) {
-  throw new Error('Supabase URL and service role key must be provided')
-}
-
-const supabase = createClient(supabaseUrl, supabaseKey)
+import { supabaseAdmin } from '../../../lib/supabaseAdmin'
 
 export async function POST(request: Request) {
   try {
@@ -29,7 +20,7 @@ export async function POST(request: Request) {
       )
     }
 
-    const { error } = await supabase.from('subscribers').insert({
+    const { error } = await supabaseAdmin.from('subscribers').insert({
       email,
       interests,
       subscribed_at: new Date().toISOString(),
