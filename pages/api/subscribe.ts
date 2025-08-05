@@ -1,13 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { supabase } from '../../supabaseClient';
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
+export default function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
-    res.setHeader('Allow', ['POST']);
-    return res.status(405).json({ error: 'Method Not Allowed' });
+    return res.status(400).json({ error: 'Only POST requests are allowed' });
   }
 
   try {
@@ -17,19 +12,17 @@ export default async function handler(
       return res.status(400).json({ error: 'Name and email are required' });
     }
 
-    const { error } = await supabase
-      .from('email_signups')
-      .insert([{ name, email }]);
-
-    if (error) {
-      console.error('Supabase insert error:', error);
-      return res.status(500).json({ error: 'Failed to save subscription' });
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(email)) {
+      return res.status(400).json({ error: 'Invalid email format' });
     }
+
+    console.log('New subscription:', { name, email });
 
     return res.status(200).json({ message: 'Subscription received' });
   } catch (err) {
     console.error('Subscription error:', err);
-    return res.status(500).json({ error: 'Unable to process subscription' });
+    return res.status(400).json({ error: 'Invalid request payload' });
   }
 }
 
