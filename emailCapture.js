@@ -3,25 +3,36 @@ import { supabase } from './supabaseClient.js'
 document.addEventListener('DOMContentLoaded', () => {
   const form = document.getElementById('email-form')
   const messageDiv = document.getElementById('form-message')
-  if (!form || !messageDiv) return
+  const submitBtn = document.getElementById('submitBtn')
+  if (!form || !messageDiv || !submitBtn) return
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault()
-    const emailInput = form.querySelector('#email')
-    const email = emailInput.value.trim()
-    const name = document.getElementById('name').value
-    const age_group = document.getElementById('age_group').value
-    const interest = document.getElementById('interest').value
-    const message = document.getElementById('message').value
+    const email = document.getElementById('email').value.trim()
+    const name = document.getElementById('name').value.trim()
+    const age_group = document.getElementById('age_group').value.trim()
+    const interest = document.getElementById('interest').value.trim()
+    const message = document.getElementById('message').value.trim()
 
-    if (!email) {
-      messageDiv.textContent = 'Please enter your email.'
+    if (!name || !email || !age_group) {
+      alert('Please fill in your name, email, and age group.')
       return
     }
 
-    const { error } = await supabase
-      .from('early_access_waitlist')
-      .insert({ email, name, age_group, interest, message })
+    submitBtn.disabled = true
+    submitBtn.innerText = 'Submitting...'
+
+    let error
+    try {
+      ;({ error } = await supabase
+        .from('early_access_waitlist')
+        .insert({ email, name, age_group, interest, message }))
+    } catch (e) {
+      error = e
+    }
+
+    submitBtn.disabled = false
+    submitBtn.innerText = 'Join Waitlist'
 
     if (error) {
       messageDiv.textContent = 'There was an error. Please try again.'
