@@ -95,7 +95,8 @@
 
   <div id="result" style="margin-top: 20px;"></div>
 
-    <form id="email-form" style="margin-top: 20px;">
+  <div id="email-form-container" style="margin-top: 20px;">
+    <form id="email-form">
       <input type="text" id="name" placeholder="Full Name" />
       <select id="age_group">
         <option value="Child">Child</option>
@@ -109,7 +110,11 @@
       <input type="email" id="email" placeholder="Enter your email" />
       <button id="submitBtn" type="submit">Join Waitlist</button>
     </form>
-  <div id="form-message"></div>
+    <div id="form-message"></div>
+  </div>
+  <div id="success-message" style="display: none; margin-top: 20px;">
+    <p>Thanks! You're on the list.</p>
+  </div>
 
   <script type="module" src="index.js"></script>
   <script type="module" src="./emailCapture.js"></script>

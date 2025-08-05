@@ -1,10 +1,12 @@
 import { supabase } from './supabaseClient.js'
 
 document.addEventListener('DOMContentLoaded', () => {
+  const formContainer = document.getElementById('email-form-container')
   const form = document.getElementById('email-form')
   const messageDiv = document.getElementById('form-message')
+  const successMessage = document.getElementById('success-message')
   const submitBtn = document.getElementById('submitBtn')
-  if (!form || !messageDiv || !submitBtn) return
+  if (!form || !messageDiv || !submitBtn || !formContainer || !successMessage) return
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault()
@@ -40,7 +42,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     form.reset()
-    messageDiv.textContent = 'Thanks! You\'re on the list.'
-    alert("Thanks for joining the waitlist! We'll be in touch soon.")
+    formContainer.style.display = 'none'
+    successMessage.style.display = 'block'
+    // To redirect to a thank-you page instead of showing a message, use:
+    // window.location.href = '/thank-you.html'
   })
 })
