@@ -1,13 +1,9 @@
-import { serve } from "https://deno.land/std/http/server.ts";
-import { Resend } from "npm:resend";
+import { Resend } from "resend";
+import { NextRequest, NextResponse } from "next/server";
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY") ?? "");
+const resend = new Resend(process.env.RESEND_API_KEY || "");
 
-export default serve(async (req: Request): Promise<Response> => {
-  if (req.method !== "POST") {
-    return new Response("Method Not Allowed", { status: 405 });
-  }
-
+export async function POST(req: NextRequest) {
   try {
     const { email, name, selectedOption } = await req.json();
 
@@ -19,28 +15,19 @@ export default serve(async (req: Request): Promise<Response> => {
     });
 
     if (error) {
-      return new Response(
-        JSON.stringify({ status: "error", message: error.message }),
-        {
-          status: 500,
-          headers: { "Content-Type": "application/json" },
-        },
+      return NextResponse.json(
+        { status: "error", message: error.message },
+        { status: 500 },
       );
     }
 
-    return new Response(
-      JSON.stringify({ status: "success", id: data?.id }),
-      { headers: { "Content-Type": "application/json" } },
-    );
+    return NextResponse.json({ status: "success", id: data?.id });
   } catch (err) {
     console.error(err);
-    return new Response(
-      JSON.stringify({ status: "error", message: (err as Error).message }),
-      {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      },
+    return NextResponse.json(
+      { status: "error", message: (err as Error).message },
+      { status: 400 },
     );
   }
-});
+}
 
