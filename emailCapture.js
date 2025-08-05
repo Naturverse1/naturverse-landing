@@ -10,9 +10,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault()
-    const email = document.getElementById('email').value.trim()
+    const email = document.getElementById('waitlist-email').value.trim()
+    const name = document.getElementById('name').value.trim()
+    const ageGroup = document.getElementById('age_group').value
+    const interest = document.getElementById('interest').value.trim()
+    const extraMessage = document.getElementById('message').value.trim()
 
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!email || !emailPattern.test(email)) {
       messageDiv.textContent = 'Please enter a valid email.'
       return
@@ -21,11 +25,18 @@ document.addEventListener('DOMContentLoaded', () => {
     submitBtn.disabled = true
     submitBtn.innerText = 'Submitting...'
 
-    let error
+    let data, error
     try {
-      ;({ error } = await supabase
+      ;({ data, error } = await supabase
         .from('email_captures')
-        .insert({ email }))
+        .insert({
+          name,
+          age_group: ageGroup,
+          interest,
+          message: extraMessage,
+          email,
+        })
+        .select())
     } catch (e) {
       error = e
     }
@@ -39,6 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return
     }
 
+    console.log('Form submission stored:', data)
     form.reset()
     formContainer.style.display = 'none'
     successMessage.style.display = 'block'

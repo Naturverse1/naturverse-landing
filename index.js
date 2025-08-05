@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     button.addEventListener('click', testSupabase)
   }
 
-  const emailInput = document.getElementById('email')
+  const emailInput = document.getElementById('auth-email')
   const passwordInput = document.getElementById('password')
   const resultText = document.getElementById('authResult')
 
