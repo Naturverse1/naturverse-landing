@@ -1,4 +1,5 @@
 import { useState, useEffect, FormEvent } from 'react'
+// Simple subscription form component
 
 export default function SubscribeForm() {
   const [name, setName] = useState('')
