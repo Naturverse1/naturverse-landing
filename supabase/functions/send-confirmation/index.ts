@@ -1,9 +1,9 @@
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+import { serve } from "https://deno.land/std/http/server.ts";
 import { Resend } from "npm:resend";
 
-const resend = new Resend(Deno.env.get('RESEND_API_KEY') || "");
+const resend = new Resend(Deno.env.get("RESEND_API_KEY") ?? "");
 
-serve(async (req: Request): Promise<Response> => {
+export default serve(async (req: Request): Promise<Response> => {
   if (req.method !== "POST") {
     return new Response("Method Not Allowed", { status: 405 });
   }
@@ -11,22 +11,33 @@ serve(async (req: Request): Promise<Response> => {
   try {
     const { email, name, selectedOption } = await req.json();
 
-    await resend.emails.send({
-      from: "no-reply@naturverse.com",
+    const { data, error } = await resend.emails.send({
+      from: "Naturverse <noreply@naturverse.com>",
       to: email,
-      subject: "🌱 Welcome to The Naturverse!",
-      html: `<p>Hello ${name},</p><p>Thank you for joining the waitlist with the option: ${selectedOption}.</p>`,
+      subject: "Thanks for joining the Naturverse!",
+      html: `<p>Hi ${name},</p><p>Thanks for joining the waitlist with the option: ${selectedOption}.</p>`,
     });
 
-    return new Response(JSON.stringify({ success: true }), {
-      headers: { "Content-Type": "application/json" },
-    });
-  } catch (error) {
-    console.error(error);
+    if (error) {
+      return new Response(
+        JSON.stringify({ status: "error", message: error.message }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+    }
+
     return new Response(
-      JSON.stringify({ error: (error as Error).message }),
+      JSON.stringify({ status: "success", id: data?.id }),
+      { headers: { "Content-Type": "application/json" } },
+    );
+  } catch (err) {
+    console.error(err);
+    return new Response(
+      JSON.stringify({ status: "error", message: (err as Error).message }),
       {
-        status: 500,
+        status: 400,
         headers: { "Content-Type": "application/json" },
       },
     );
