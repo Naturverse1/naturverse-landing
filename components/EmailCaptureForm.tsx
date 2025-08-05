@@ -1,35 +1,47 @@
 import { useState, useEffect, FormEvent } from 'react'
 
 export default function EmailCaptureForm() {
-  const [email, setEmail] = useState('')
   const [name, setName] = useState('')
-  const [status, setStatus] = useState({ type: '', message: '' })
+  const [email, setEmail] = useState('')
+  const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(false)
+  const [success, setSuccess] = useState(false)
 
   useEffect(() => {
-    if (status.message) {
-      const timer = setTimeout(() => setStatus({ type: '', message: '' }), 5000)
+    if (message) {
+      const timer = setTimeout(() => {
+        setMessage('')
+        setError(false)
+        setSuccess(false)
+      }, 5000)
       return () => clearTimeout(timer)
     }
-  }, [status])
+  }, [message])
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setLoading(true)
+    setError(false)
+    setSuccess(false)
+    setMessage('')
+
     try {
       const res = await fetch('/api/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, name }),
+        body: JSON.stringify({ name, email }),
       })
 
       if (!res.ok) throw new Error('Network response was not ok')
-      setStatus({ type: 'success', message: 'Subscription successful!' })
-      setEmail('')
+      setSuccess(true)
+      setMessage('Subscription successful!')
       setName('')
+      setEmail('')
     } catch (err) {
       console.error(err)
-      setStatus({ type: 'error', message: 'Failed to subscribe. Please try again.' })
+      setError(true)
+      setMessage('Failed to subscribe. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -54,7 +66,8 @@ export default function EmailCaptureForm() {
       <button type="submit" disabled={loading}>
         {loading ? 'Submitting...' : 'Subscribe'}
       </button>
-      {status.message && <p className={status.type}>{status.message}</p>}
+      {success && message && <p className="success">{message}</p>}
+      {error && message && <p className="error">{message}</p>}
     </form>
   )
 }
