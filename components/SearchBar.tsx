@@ -14,6 +14,10 @@ export default function SearchBar({ search, setSearch, delay = 300 }: Props) {
     return () => clearTimeout(handler)
   }, [value, setSearch, delay])
 
+  useEffect(() => {
+    setValue(search)
+  }, [search])
+
   return (
     <input
       type="text"
