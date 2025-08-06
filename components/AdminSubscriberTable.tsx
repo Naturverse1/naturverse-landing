@@ -15,10 +15,15 @@ interface TableProps {
   onDelete?: (id: string) => void
 }
 
-export default function AdminSubscriberTable({ subscribers, page, total, pageSize, onPageChange, onDelete }: TableProps) {
-  if (subscribers.length === 0) {
-    return <div>No subscribers found</div>
-  }
+export default function AdminSubscriberTable({
+  subscribers,
+  page,
+  total,
+  pageSize,
+  onPageChange,
+  onDelete,
+}: TableProps) {
+  const colCount = onDelete ? 5 : 4
 
   return (
     <div>
@@ -34,24 +39,41 @@ export default function AdminSubscriberTable({ subscribers, page, total, pageSiz
             </tr>
           </thead>
           <tbody>
-            {subscribers.map((s) => (
-              <tr key={s.id}>
-                <td className="border px-4 py-2">{s.email}</td>
-                <td className="border px-4 py-2">{Array.isArray(s.interests) ? s.interests.join(', ') : s.interests || ''}</td>
-                <td className="border px-4 py-2">{new Date(s.created_at).toLocaleString()}</td>
-                <td className="border px-4 py-2">{s.source || ''}</td>
-                {onDelete && (
-                  <td className="border px-4 py-2">
-                    <button
-                      onClick={() => onDelete(s.id)}
-                      className="px-2 py-1 bg-red-500 text-white rounded"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                )}
+            {subscribers.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={colCount}
+                  className="border px-4 py-2 text-center"
+                >
+                  No subscribers found
+                </td>
               </tr>
-            ))}
+            ) : (
+              subscribers.map((s) => (
+                <tr key={s.id}>
+                  <td className="border px-4 py-2">{s.email}</td>
+                  <td className="border px-4 py-2">
+                    {Array.isArray(s.interests)
+                      ? s.interests.join(', ')
+                      : s.interests || ''}
+                  </td>
+                  <td className="border px-4 py-2">
+                    {new Date(s.created_at).toLocaleString()}
+                  </td>
+                  <td className="border px-4 py-2">{s.source || ''}</td>
+                  {onDelete && (
+                    <td className="border px-4 py-2">
+                      <button
+                        onClick={() => onDelete(s.id)}
+                        className="px-2 py-1 bg-red-500 text-white rounded"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  )}
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
