@@ -11,12 +11,13 @@
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^6.1.0",
     "hardhat": "^2.26.2",
+    "hardhat-compile-solc": "file:hardhat-compile-solc",
     "lite-server": "^2.6.1",
-    "solc": "^0.8.18",
-    "hardhat-compile-solc": "file:hardhat-compile-solc"
+    "solc": "^0.8.18"
   },
   "dependencies": {
     "@openzeppelin/contracts": "^4.9.5",
-    "@supabase/supabase-js": "^2.53.0"
+    "@supabase/supabase-js": "^2.53.0",
+    "dotenv": "^17.2.1"
   }
 }
