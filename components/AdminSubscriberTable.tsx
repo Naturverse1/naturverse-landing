@@ -17,7 +17,7 @@ interface TableProps {
 
 export default function AdminSubscriberTable({ subscribers, page, total, pageSize, onPageChange, onDelete }: TableProps) {
   if (subscribers.length === 0) {
-    return <div>No subscribers found.</div>
+    return <div>No subscribers found</div>
   }
 
   return (
