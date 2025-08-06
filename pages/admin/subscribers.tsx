@@ -1,88 +1,79 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
-import { supabase } from '../../supabaseClient.js'
-import { supabaseAdmin } from '../../lib/supabaseAdmin'
-import SearchBar from '../../components/SearchBar'
-import AdminSubscriberTable, { Subscriber } from '../../components/AdminSubscriberTable'
-import { exportToCsv } from '../../utils/exportCsv'
-import { isAdmin } from '../../utils/isAdmin'
+import { createClient } from '@supabase/supabase-js'
+import { exportCsv } from '@/utils/exportCsv'
+import SearchBar from '@/components/SearchBar'
+import SubscriberTable from '@/components/SubscriberTable'
+import { isAdmin } from '@/utils/isAdmin'
 
-export default function SubscribersPage() {
-  const [subs, setSubs] = useState<Subscriber[]>([])
-  const [loading, setLoading] = useState(true)
-  const [page, setPage] = useState(1)
-  const [total, setTotal] = useState(0)
-  const [search, setSearch] = useState('')
+interface Subscriber {
+  email: string
+  interest?: string | null
+  created_at: string
+}
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
+
+export default function AdminSubscribers() {
   const router = useRouter()
-
-  const PAGE_SIZE = 10
+  const [userEmail, setUserEmail] = useState('')
+  const [subscribers, setSubscribers] = useState<Subscriber[]>([])
+  const [filtered, setFiltered] = useState<Subscriber[]>([])
+  const [search, setSearch] = useState('')
+  const [page, setPage] = useState(1)
+  const [perPage] = useState(10)
 
   useEffect(() => {
-    async function protect() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user || !isAdmin(user.email)) {
-        router.replace('/')
-        return
-      }
-    }
-    protect()
+    supabase.auth.getUser().then(({ data }) => {
+      const email = data?.user?.email || ''
+      setUserEmail(email)
+      if (!isAdmin(email)) router.push('/')
+    })
   }, [router])
 
   useEffect(() => {
-    async function load() {
-      setLoading(true)
-      let query = supabaseAdmin
-        .from('subscribers')
-        .select('id,email,interests,created_at,source', { count: 'exact' })
-        .order('created_at', { ascending: false })
-        .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1)
-      if (search) {
-        query = query.or(`email.ilike.%${search}%,interests.ilike.%${search}%`)
-      }
-      const { data, count } = await query
-      setSubs(data || [])
-      setTotal(count || 0)
-      setLoading(false)
-    }
-    load()
-  }, [page, search])
+    fetchSubscribers()
+  }, [page])
 
-  const handleExport = () => {
-    const headers = ['Email', 'Interest', 'Created Date', 'Source']
-    const rows = subs.map((s) => [
-      s.email,
-      Array.isArray(s.interests) ? s.interests.join(', ') : s.interests || '',
-      new Date(s.created_at).toISOString(),
-      s.source || '',
-    ])
-    exportToCsv('subscribers-export.csv', headers, rows)
+  useEffect(() => {
+    const filteredData = subscribers.filter((s) =>
+      s.email.toLowerCase().includes(search.toLowerCase()) ||
+      s.interest?.toLowerCase().includes(search.toLowerCase())
+    )
+    setFiltered(filteredData)
+  }, [search, subscribers])
+
+  async function fetchSubscribers() {
+    const from = (page - 1) * perPage
+    const to = from + perPage - 1
+    const { data } = await supabase
+      .from('subscribers')
+      .select('*')
+      .range(from, to)
+      .order('created_at', { ascending: false })
+    setSubscribers((data as Subscriber[]) || [])
   }
-
-  const handleDelete = async (id: string) => {
-    await supabaseAdmin.from('subscribers').delete().eq('id', id)
-    setSubs((curr) => curr.filter((s) => s.id !== id))
-    setTotal((t) => t - 1)
-  }
-
-  if (loading) return <div>Loading...</div>
 
   return (
-    <main className="p-4">
-      <h1 className="text-2xl mb-4">Subscribers</h1>
-      <div className="mb-4 flex flex-col md:flex-row items-start md:items-center gap-4">
-        <SearchBar onSearch={(val) => { setSearch(val); setPage(1) }} placeholder="Search by email or interest" />
-        <button onClick={handleExport} className="px-4 py-2 bg-blue-500 text-white rounded">
-          Export CSV
-        </button>
-      </div>
-      <AdminSubscriberTable
-        subscribers={subs}
+    <div className="p-4">
+      <h1 className="text-2xl mb-4">Admin: Subscribers</h1>
+      <SearchBar search={search} setSearch={setSearch} />
+      <SubscriberTable
+        subscribers={filtered}
         page={page}
-        total={total}
-        pageSize={PAGE_SIZE}
-        onPageChange={setPage}
-        onDelete={handleDelete}
+        setPage={setPage}
+        perPage={perPage}
       />
-    </main>
+      <button
+        onClick={() => exportCsv(filtered as any[])}
+        className="px-4 py-2 mt-4 bg-green-600 text-white rounded hover:bg-green-700"
+      >
+        Export CSV
+      </button>
+    </div>
   )
 }
+

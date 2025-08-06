@@ -1,26 +1,17 @@
-import { useState, useEffect } from 'react'
-
-interface SearchBarProps {
-  onSearch: (value: string) => void
-  placeholder?: string
-  delay?: number
+interface Props {
+  search: string
+  setSearch: (value: string) => void
 }
 
-export default function SearchBar({ onSearch, placeholder = 'Search...', delay = 300 }: SearchBarProps) {
-  const [value, setValue] = useState('')
-
-  useEffect(() => {
-    const handler = setTimeout(() => onSearch(value), delay)
-    return () => clearTimeout(handler)
-  }, [value, delay, onSearch])
-
+export default function SearchBar({ search, setSearch }: Props) {
   return (
     <input
       type="text"
-      value={value}
-      onChange={(e) => setValue(e.target.value)}
-      placeholder={placeholder}
-      className="px-2 py-1 border rounded w-full md:w-64"
+      placeholder="Search by email or interest…"
+      value={search}
+      onChange={(e) => setSearch(e.target.value)}
+      className="w-full p-2 border border-gray-300 rounded mb-4"
     />
   )
 }
+
