@@ -1,7 +1,6 @@
-export function isAdmin(email?: string | null): boolean {
-  const allowed = (process.env.ALLOWED_ADMINS || '')
-    .split(',')
-    .map(e => e.trim())
-    .filter(Boolean)
-  return email ? allowed.includes(email) : false
+const allowed = (process.env.NEXT_PUBLIC_ALLOWED_ADMINS || '').split(',')
+
+export function isAdmin(email: string) {
+  return allowed.includes(email)
 }
+
