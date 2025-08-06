@@ -8,8 +8,13 @@ const settings = {
 const alchemy = new Alchemy(settings);
 
 async function getLatestBlock() {
-  const block = await alchemy.core.getBlockNumber();
-  console.log("Latest Block Number:", block);
+  try {
+    console.log("Connecting to Alchemy Amoy testnet...");
+    const block = await alchemy.core.getBlockNumber();
+    console.log("Latest Block Number:", block);
+  } catch (err) {
+    console.error("Failed to fetch latest block number:", err);
+  }
 }
 
 getLatestBlock();
