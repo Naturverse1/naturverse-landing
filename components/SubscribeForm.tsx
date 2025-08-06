@@ -5,6 +5,7 @@ export default function SubscribeForm() {
   const [interests, setInterests] = useState<string[]>([])
   const [message, setMessage] = useState('')
   const [error, setError] = useState(false)
+  const [loading, setLoading] = useState(false)
 
   const interestOptions = ['news', 'events', 'offers']
 
@@ -27,6 +28,7 @@ export default function SubscribeForm() {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    setLoading(true)
     try {
       const res = await fetch('/api/subscribe', {
         method: 'POST',
@@ -34,17 +36,18 @@ export default function SubscribeForm() {
         body: JSON.stringify({ email, interests }),
       })
 
-      const data = await res.json()
-      if (!res.ok || !data.success) throw new Error(data.message || 'Network response was not ok')
+      if (!res.ok) throw new Error('Network response was not ok')
 
-      setMessage('Thanks for subscribing!')
+      setMessage('Thank you for subscribing!')
       setError(false)
       setEmail('')
       setInterests([])
     } catch (err) {
       console.error(err)
       setError(true)
-      setMessage('Subscription failed. Please try again.')
+      setMessage('Oops, something went wrong!')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -70,7 +73,9 @@ export default function SubscribeForm() {
           </label>
         ))}
       </div>
-      <button type="submit">Subscribe</button>
+      <button type="submit" disabled={loading}>
+        {loading ? 'Submitting...' : 'Subscribe'}
+      </button>
       {message && (
         <p style={{ color: error ? 'red' : 'green' }}>{message}</p>
       )}
