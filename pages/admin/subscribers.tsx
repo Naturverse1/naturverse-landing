@@ -40,9 +40,40 @@ export default function Subscribers() {
 
   if (loading) return <div>Loading...</div>
 
+  const exportCsv = () => {
+    const headers = ['Email', 'Interests', 'Created At']
+    const rows = subs.map((s) => [
+      s.email,
+      Array.isArray(s.interests) ? s.interests.join(', ') : s.interests || '',
+      new Date(s.created_at).toISOString(),
+    ])
+    const csv = [headers, ...rows]
+      .map((row) =>
+        row
+          .map((field) => `"${String(field).replace(/"/g, '""')}"`)
+          .join(',')
+      )
+      .join('\n')
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', 'subscribers-export.csv')
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+  }
+
   return (
     <main className="p-4">
       <h1 className="text-2xl mb-4">Subscribers</h1>
+      <button
+        onClick={exportCsv}
+        className="mb-4 px-4 py-2 bg-blue-500 text-white rounded"
+      >
+        Export CSV
+      </button>
       <table className="min-w-full border-collapse">
         <thead>
           <tr>
