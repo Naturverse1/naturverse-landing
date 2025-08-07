@@ -93,6 +93,9 @@ const Navbar = () => {
             <Link to="/storyforge" className="nav-link">
               📖 Story Forge™
             </Link>
+            <Link to="/ar-cam" className="nav-link">
+              🎭 AR Camera™
+            </Link>
             {user && (
               <button
                 onClick={handleSignOut}
@@ -242,6 +245,14 @@ const Navbar = () => {
               >
                 <User size={20} />
                 <span>Story Forge™</span>
+              </Link>
+              <Link
+                to="/ar-cam"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center space-x-2 text-gray-700 hover:text-nature-green transition-colors"
+              >
+                <User size={20} />
+                <span>AR Camera™</span>
               </Link>
               <button
                 onClick={handleSignOut}
