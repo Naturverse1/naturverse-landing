@@ -37,6 +37,7 @@ import TurianVoiceChat from './components/TurianChat/TurianVoiceChat.jsx';
 import ParentDashboard from './components/Parents/ParentDashboard.jsx';
 import NatureFit from './components/NatureFit/NatureFit.jsx';
 import MusicZone from './components/MusicZone/MusicZone.jsx';
+import StoryForge from './components/StoryForge/StoryForge.jsx';
 
 function AppContent() {
   const { user } = useAuth()
@@ -101,6 +102,7 @@ function AppContent() {
             <Route path="/parents" element={<ParentDashboard />} />
             <Route path="/naturefit" element={<NatureFit />} />
             <Route path="/musiczone" element={<MusicZone />} />
+            <Route path="/storyforge" element={<StoryForge />} />
           </Routes>
 
           {/* Global Inventory Drawer */}
