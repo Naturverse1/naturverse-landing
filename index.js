@@ -13,17 +13,22 @@ if (typeof window === 'undefined') {
   const app = express()
   
   app.use(express.json())
+  app.use(express.static('.'))
   
   app.post('/api/turian', async (req, res) => {
     try {
       const { message } = req.body
       
+      if (!process.env.OPENAI_API_KEY) {
+        return res.status(500).json({ message: 'OpenAI API key not configured. Turian needs his magical powers!' })
+      }
+      
       const completion = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo",
+        model: "gpt-4",
         messages: [
           {
             role: "system",
-            content: "You are Turian the magical durian turtle, a playful big brother in a fantasy learning world called The Naturverse™."
+            content: `You are Turian, a magical durian turtle from The Naturverse™, a friendly big brother who guides kids through educational adventures with encouragement, nature wisdom, and fun. Use the catchphrase "Dee mak!" when something is correct or exciting.`
           },
           {
             role: "user",
@@ -36,7 +41,7 @@ if (typeof window === 'undefined') {
       res.json({ message: completion.choices[0].message.content })
     } catch (error) {
       console.error('OpenAI API error:', error)
-      res.status(500).json({ error: 'Failed to get response from Turian' })
+      res.status(500).json({ message: 'Something went wrong talking to Turian.' })
     }
   })
   
