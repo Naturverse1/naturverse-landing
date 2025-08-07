@@ -1,11 +1,15 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { Link } from 'react-router-dom'
-import { BookOpen, Trophy, Star, Bell, Award } from 'lucide-react'
+import { BookOpen, Trophy, Star, Bell, Award, ShoppingBag, User } from 'lucide-react'
 import StoryBuilder from '../components/StoryBuilder/StoryBuilder'
 import Inventory from '../components/Marketplace/Inventory'
 import WeatherWidget from '../components/Weather/WeatherWidget'
 import GiftCodeRedemption from '../components/GiftCode/GiftCodeRedemption'
+import Karaoke from '../components/KaraokeZone/Karaoke'
+import Wardrobe from '../components/Navatar/Wardrobe'
+import TutorBot from '../components/Naturversity/TutorBot'
+import Companion from '../components/PetCompanions/Companion'
 
 const Dashboard = () => {
   const { user } = useAuth()
@@ -128,11 +132,19 @@ const Dashboard = () => {
         <div className="space-y-6">
           <StoryBuilder />
           <GiftCodeRedemption />
+          <Karaoke />
         </div>
         <div className="space-y-6">
           <WeatherWidget />
           <Inventory />
+          <TutorBot />
         </div>
+      </div>
+
+      {/* Advanced Features */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <Wardrobe />
+        <Companion />
       </div>
     </div>
   )
