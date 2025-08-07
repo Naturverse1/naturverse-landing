@@ -1,5 +1,7 @@
 import React, { useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import TeacherDashboard from './pages/Teacher/Dashboard'
+import StudentDashboard from './pages/Student/Dashboard'
 import { Elements } from '@stripe/react-stripe-js'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { stripePromise } from './utils/stripePromise'
@@ -72,6 +74,8 @@ function AppContent() {
             <Route path="/marketplace-admin" element={<MarketplaceAdmin />} />
             <Route path="/admin-panel" element={<AdminPanel />} />
             <Route path="/admin/analytics" element={<AdminPanel />} />
+            <Route path="/teacher" element={<TeacherDashboard />} />
+            <Route path="/student" element={<StudentDashboard />} />
             <Route path="/library" element={<Library />} />
             <Route path="/guardian" element={<Guardian />} />
             <Route path="/events" element={<Events />} />
