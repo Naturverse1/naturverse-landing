@@ -3,7 +3,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "start": "node index.js"
+    "start": "node index.js",
+    "lint": "eslint src/App.jsx"
   },
   "name": "naturverse-homepage",
   "version": "1.0.0",
@@ -12,6 +13,7 @@
     "@nomicfoundation/hardhat-toolbox": "^6.1.0",
     "@vitejs/plugin-react": "^4.0.0",
     "autoprefixer": "^10.4.14",
+    "eslint": "^8.57.1",
     "hardhat": "^2.26.2",
     "hardhat-compile-solc": "file:hardhat-compile-solc",
     "lite-server": "^2.6.1",
