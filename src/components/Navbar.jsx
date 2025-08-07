@@ -54,6 +54,13 @@ const Navbar = () => {
                 <span>Sign Out</span>
               </button>
             )}
+            {/* Add Admin Panel link for admins */}
+            {user && (
+              <Link to="/admin-panel" className="flex items-center space-x-1 text-gray-700 hover:text-nature-green transition-colors">
+                <Settings size={20} />
+                <span>Admin Panel</span>
+              </Link>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -91,6 +98,11 @@ const Navbar = () => {
                 <LogOut size={20} />
                 <span>Sign Out</span>
               </button>
+              {/* Add Admin Panel link for admins in mobile */}
+              <Link to="/admin-panel" onClick={() => setIsOpen(false)} className="flex items-center space-x-2 text-gray-700 hover:text-nature-green transition-colors">
+                <Settings size={20} />
+                <span>Admin Panel</span>
+              </Link>
             </div>
           </div>
         )}

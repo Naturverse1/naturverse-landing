@@ -16,6 +16,7 @@ import AvatarCreator from './pages/AvatarCreator'
 import Marketplace from './pages/Marketplace'
 import MarketplaceAdmin from './pages/MarketplaceAdmin'
 import MyInventory from './pages/MyInventory'
+import AdminPanel from './pages/AdminPanel'
 
 function App() {
   return (
@@ -36,8 +37,9 @@ function App() {
                 <Route path="/marketplace/admin" element={<MarketplaceAdmin />} />
                 <Route path="/inventory" element={<MyInventory />} />
                 <Route path="/admin" element={<Admin />} />
-                <Route path="/admin/dashboard" element={<AdminDashboard />} />
-                <Route path="/admin/marketplace" element={<MarketplaceAdmin />} />
+                <Route path="/admin-dashboard" element={<AdminDashboard />} />
+                <Route path="/marketplace-admin" element={<MarketplaceAdmin />} />
+                <Route path="/admin-panel" element={<AdminPanel />} />
               </Routes>
             </main>
             <TurianAI />
