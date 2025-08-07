@@ -1,0 +1,15 @@
+Expand the Turian AI system with the following upgrades, fully integrated with the existing React 18 + Vite + Tailwind + Supabase structure:
+
+1. Character Switching: Add a dropdown or toggle that lets the user choose between multiple AI characters — Turian, Mangosteen Monk, Coconut Cruze, etc. Each uses a unique system prompt and personality style. Responses are handled through the same /api/turian route, but with different persona prompts based on selection.
+
+2. Daily Quests: Add a "Daily Quest" button that, when clicked, generates a unique quest for the day based on the current date and user region. Store daily quests in Supabase under a "daily_quests" table with: id, user_id, date, region, quest_text, completed (boolean). Prevent reloading or repeating quests for the same day.
+
+3. AI Quiz Generator: Add a feature where Turian can generate multiple-choice quizzes using the OpenAI API. Add a button labeled "Generate Quiz" that sends a prompt to GPT-4 asking for a quiz about a selected topic. Format results as JSON (question, options, correct answer) and display the quiz in the UI with scoring.
+
+4. $NATUR Coin Rewards: After completing quizzes or quests, trigger a simulated $NATUR token reward. Use Supabase to log each reward in a table called "natur_rewards" with: id, user_id, type (quiz/quest), amount, timestamp. Show total rewards in the user’s profile dashboard.
+
+5. Dynamic Navatar Suggestions: When a user finishes a quiz or quest, Turian should suggest upgrades or changes to their Navatar based on their answers. Store these suggestions in Supabase under a "navatar_suggestions" table linked to the user.
+
+6. Admin Dashboard: Add a new admin route accessible only to authenticated users with role = 'admin' in Supabase. Display usage stats: number of users, total quests completed, top quiz scorers, NFT redemptions, and $NATUR rewards issued. Use Supabase queries to populate the data.
+
+Maintain Turian’s personality, voice, and multilingual support. Do not alter existing working features. Style everything consistently with the Naturverse branding.
