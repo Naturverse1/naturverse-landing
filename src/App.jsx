@@ -12,6 +12,8 @@ import Profile from './pages/Profile'
 import Admin from './pages/Admin'
 import AdminDashboard from './pages/AdminDashboard'
 import AvatarCreator from './pages/AvatarCreator'
+import Marketplace from './pages/Marketplace'
+import MarketplaceAdmin from './pages/MarketplaceAdmin'
 
 function App() {
   return (
@@ -27,8 +29,10 @@ function App() {
               <Route path="/quizzes" element={<Quizzes />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/avatar" element={<AvatarCreator />} />
+              <Route path="/marketplace" element={<Marketplace />} />
               <Route path="/admin" element={<Admin />} />
-            <Route path="/admin/dashboard" element={<AdminDashboard />} />
+              <Route path="/admin/dashboard" element={<AdminDashboard />} />
+              <Route path="/admin/marketplace" element={<MarketplaceAdmin />} />
             </Routes>
           </main>
           <TurianAI />

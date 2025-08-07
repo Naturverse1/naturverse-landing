@@ -448,6 +448,75 @@ if (typeof window === 'undefined') {
     }
   })
 
+  // Get User Inventory Route
+  app.get('/api/inventory/:userId', async (req, res) => {
+    try {
+      const { userId } = req.params
+      const { createClient } = require('@supabase/supabase-js')
+      const supabase = createClient(
+        process.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co',
+        process.env.VITE_SUPABASE_ANON_KEY || 'placeholder'
+      )
+      
+      const { data, error } = await supabase
+        .from('user_inventory')
+        .select(`
+          *,
+          market_items (
+            name,
+            category,
+            image_url,
+            rarity,
+            description,
+            metadata
+          )
+        `)
+        .eq('user_id', userId)
+        .order('acquired_date', { ascending: false })
+      
+      if (error) throw error
+      
+      res.json({ inventory: data })
+    } catch (error) {
+      console.error('Inventory fetch error:', error)
+      res.status(500).json({ message: 'Failed to fetch inventory' })
+    }
+  })
+
+  // Get Purchase History Route
+  app.get('/api/purchases/:userId', async (req, res) => {
+    try {
+      const { userId } = req.params
+      const { createClient } = require('@supabase/supabase-js')
+      const supabase = createClient(
+        process.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co',
+        process.env.VITE_SUPABASE_ANON_KEY || 'placeholder'
+      )
+      
+      const { data, error } = await supabase
+        .from('user_purchases')
+        .select(`
+          *,
+          market_items (
+            name,
+            category,
+            image_url,
+            rarity
+          )
+        `)
+        .eq('user_id', userId)
+        .order('purchase_date', { ascending: false })
+        .limit(50)
+      
+      if (error) throw error
+      
+      res.json({ purchases: data })
+    } catch (error) {
+      console.error('Purchase history error:', error)
+      res.status(500).json({ message: 'Failed to fetch purchase history' })
+    }
+  })
+
   // Admin Stats Route
   app.get('/api/admin/stats', async (req, res) => {
     try {
