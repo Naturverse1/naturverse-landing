@@ -1,8 +1,9 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { Elements } from '@stripe/react-stripe-js'
-import { AuthProvider } from './contexts/AuthContext'
+import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { stripePromise } from './utils/stripePromise'
+import { loadGameState } from './utils/saveGame'
 import Navbar from './components/Navbar'
 import TurianAI from './components/TurianAI'
 import Home from './pages/Home'
@@ -26,44 +27,74 @@ import InventoryDrawer from './components/Inventory/InventoryDrawer'
 import RegionStorybook from './components/Storybook/RegionStorybook'
 import SelfieBooth from './components/SelfieCam/SelfieBooth'
 
+function AppContent() {
+  const { user } = useAuth()
+
+  useEffect(() => {
+    if (user && !user.isGuest) {
+      loadGameState(user.id).then((state) => {
+        if (state) {
+          console.log(`Welcome back to ${state.region || 'The Naturverse'}!`)
+          
+          // Store game state in sessionStorage for other components to access
+          sessionStorage.setItem('gameState', JSON.stringify(state))
+          
+          // Dispatch custom event to notify components of loaded state
+          window.dispatchEvent(new CustomEvent('gameStateLoaded', { 
+            detail: state 
+          }))
+        } else {
+          console.log('Starting fresh adventure in The Naturverse!')
+        }
+      }).catch((error) => {
+        console.error('Failed to load game state:', error)
+      })
+    }
+  }, [user])
+
+  return (
+    <Router>
+      <div className="min-h-screen bg-gradient-to-br from-primary-50 to-blue-50">
+        <Navbar />
+        <main className="container mx-auto px-4 py-8">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/learning" element={<Learning />} />
+            <Route path="/quizzes" element={<Quizzes />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/avatar" element={<AvatarCreator />} />
+            <Route path="/marketplace" element={<Marketplace />} />
+            <Route path="/marketplace/admin" element={<MarketplaceAdmin />} />
+            <Route path="/inventory" element={<MyInventory />} />
+            <Route path="/admin" element={<Admin />} />
+            <Route path="/admin-dashboard" element={<AdminDashboard />} />
+            <Route path="/marketplace-admin" element={<MarketplaceAdmin />} />
+            <Route path="/admin-panel" element={<AdminPanel />} />
+            <Route path="/admin/analytics" element={<AdminPanel />} />
+            <Route path="/library" element={<Library />} />
+            <Route path="/guardian" element={<Guardian />} />
+            <Route path="/events" element={<Events />} />
+            <Route path="/voice" element={<VoiceQuest />} />
+            <Route path="/map" element={<ThailandiaMap />} />
+            <Route path="/storybook" element={<RegionStorybook />} />
+            <Route path="/selfie" element={<SelfieBooth />} />
+          </Routes>
+
+          {/* Global Inventory Drawer */}
+          <InventoryDrawer />
+        </main>
+        <TurianAI />
+      </div>
+    </Router>
+  )
+}
+
 function App() {
   return (
     <Elements stripe={stripePromise}>
       <AuthProvider>
-        <Router>
-          <div className="min-h-screen bg-gradient-to-br from-primary-50 to-blue-50">
-            <Navbar />
-            <main className="container mx-auto px-4 py-8">
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/learning" element={<Learning />} />
-                <Route path="/quizzes" element={<Quizzes />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/avatar" element={<AvatarCreator />} />
-                <Route path="/marketplace" element={<Marketplace />} />
-                <Route path="/marketplace/admin" element={<MarketplaceAdmin />} />
-                <Route path="/inventory" element={<MyInventory />} />
-                <Route path="/admin" element={<Admin />} />
-                <Route path="/admin-dashboard" element={<AdminDashboard />} />
-                <Route path="/marketplace-admin" element={<MarketplaceAdmin />} />
-                <Route path="/admin-panel" element={<AdminPanel />} />
-                <Route path="/admin/analytics" element={<AdminPanel />} />
-                <Route path="/library" element={<Library />} />
-                <Route path="/guardian" element={<Guardian />} />
-                <Route path="/events" element={<Events />} />
-                <Route path="/voice" element={<VoiceQuest />} />
-                <Route path="/map" element={<ThailandiaMap />} />
-                <Route path="/storybook" element={<RegionStorybook />} />
-                <Route path="/selfie" element={<SelfieBooth />} />
-              </Routes>
-
-              {/* Global Inventory Drawer */}
-              <InventoryDrawer />
-            </main>
-            <TurianAI />
-          </div>
-        </Router>
+        <AppContent />
       </AuthProvider>
     </Elements>
   )
