@@ -20,6 +20,9 @@ import AdminPanel from './pages/AdminPanel'
 import Library from './routes/Library'
 import Guardian from './routes/Guardian'
 import Events from './routes/Events'
+import VoiceQuest from './components/Voice/VoiceQuest'
+import ThailandiaMap from './components/Map/ThailandiaMap'
+import InventoryDrawer from './components/Inventory/InventoryDrawer'
 
 function App() {
   return (
@@ -47,7 +50,12 @@ function App() {
                 <Route path="/library" element={<Library />} />
                 <Route path="/guardian" element={<Guardian />} />
                 <Route path="/events" element={<Events />} />
+                <Route path="/voice" element={<VoiceQuest />} />
+                <Route path="/map" element={<ThailandiaMap />} />
               </Routes>
+
+              {/* Global Inventory Drawer */}
+              <InventoryDrawer />
             </main>
             <TurianAI />
           </div>

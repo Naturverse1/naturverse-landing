@@ -45,6 +45,24 @@ const Navbar = () => {
                 <span>{label}</span>
               </Link>
             ))}
+            <Link
+              to="/avatar"
+              className="text-gray-700 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+            >
+              🧙‍♂️ Avatar
+            </Link>
+            <Link
+              to="/voice"
+              className="text-gray-700 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+            >
+              🎤 Voice Quest
+            </Link>
+            <Link
+              to="/map"
+              className="text-gray-700 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+            >
+              🗺️ Map
+            </Link>
             {user && (
               <button
                 onClick={handleSignOut}
@@ -91,6 +109,30 @@ const Navbar = () => {
                   <span>{label}</span>
                 </Link>
               ))}
+              <Link
+                to="/avatar"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center space-x-2 text-gray-700 hover:text-nature-green transition-colors"
+              >
+                <User size={20} />
+                <span>Avatar</span>
+              </Link>
+              <Link
+                to="/voice"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center space-x-2 text-gray-700 hover:text-nature-green transition-colors"
+              >
+                <User size={20} />
+                <span>Voice Quest</span>
+              </Link>
+              <Link
+                to="/map"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center space-x-2 text-gray-700 hover:text-nature-green transition-colors"
+              >
+                <User size={20} />
+                <span>Map</span>
+              </Link>
               <button
                 onClick={handleSignOut}
                 className="flex items-center space-x-2 text-gray-700 hover:text-red-500 transition-colors"
