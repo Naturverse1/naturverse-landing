@@ -40,6 +40,7 @@ function App() {
                 <Route path="/admin-dashboard" element={<AdminDashboard />} />
                 <Route path="/marketplace-admin" element={<MarketplaceAdmin />} />
                 <Route path="/admin-panel" element={<AdminPanel />} />
+                <Route path="/admin/analytics" element={<AdminPanel />} />
               </Routes>
             </main>
             <TurianAI />

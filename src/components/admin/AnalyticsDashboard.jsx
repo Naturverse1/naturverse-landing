@@ -1,8 +1,8 @@
-
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import dayjs from 'dayjs';
+import { FiUsers, FiTrendingUp, FiActivity, FiBarChart } from 'react-icons/fi';
 
 export default function AnalyticsDashboard() {
   const [data, setData] = useState(null);
@@ -12,7 +12,7 @@ export default function AnalyticsDashboard() {
     const fetchAnalytics = async () => {
       try {
         setLoading(true);
-        
+
         // Fetch data from various tables with error handling
         const [
           { data: users, error: usersError },
@@ -85,13 +85,13 @@ export default function AnalyticsDashboard() {
   return (
     <div className="p-6 space-y-6">
       <h2 className="text-2xl font-bold text-gray-800">📊 Naturverse Live Analytics</h2>
-      
+
       {/* Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Stat title="Total Users" count={data.users} color="bg-blue-500" />
-        <Stat title="Quizzes Completed" count={data.quizzes} color="bg-green-500" />
-        <Stat title="Store Purchases" count={data.purchases} color="bg-purple-500" />
-        <Stat title="$NATUR Rewards" count={data.totalRewards} color="bg-yellow-500" />
+        <Stat title="Total Users" count={data.users} color="bg-blue-500" icon={<FiUsers className="h-8 w-8 text-gray-400" />} />
+        <Stat title="Quizzes Completed" count={data.quizzes} color="bg-green-500" icon={<FiActivity className="h-8 w-8 text-gray-400" />} />
+        <Stat title="Store Purchases" count={data.purchases} color="bg-purple-500" icon={<FiTrendingUp className="h-8 w-8 text-gray-400" />} />
+        <Stat title="$NATUR Rewards" count={data.totalRewards} color="bg-yellow-500" icon={<FiBarChart className="h-8 w-8 text-gray-400" />} />
       </div>
 
       {/* Activity Chart */}
@@ -116,11 +116,14 @@ export default function AnalyticsDashboard() {
   );
 }
 
-function Stat({ title, count, color }) {
+function Stat({ title, count, color, icon }) {
   return (
-    <div className={`${color} text-white rounded-lg p-4 shadow-lg`}>
-      <div className="text-2xl font-bold">{count.toLocaleString()}</div>
-      <div className="text-sm opacity-90">{title}</div>
+    <div className={`${color} text-white rounded-lg p-4 shadow-lg flex items-center justify-between`}>
+      <div>
+        <div className="text-2xl font-bold">{count.toLocaleString()}</div>
+        <div className="text-sm opacity-90">{title}</div>
+      </div>
+      {icon}
     </div>
   );
 }
