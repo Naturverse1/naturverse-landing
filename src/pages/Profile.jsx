@@ -1,7 +1,7 @@
-
 import React, { useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { User, Award, Trophy, Star, Edit2, Save } from 'lucide-react'
+import ConnectWallet from './components/ConnectWallet';
 
 const Profile = () => {
   const { user } = useAuth()
@@ -107,6 +107,14 @@ const Profile = () => {
         )}
       </div>
 
+        {/* Wallet Connection */}
+        <div className="mt-6">
+          <h3 className="text-lg font-semibold text-gray-700 mb-2">🔗 Connect Your Wallet</h3>
+          <p className="text-sm text-gray-500 mb-4">Link your crypto wallet to earn token rewards and collect NFT badges!</p>
+          <ConnectWallet />
+        </div>
+      </div>
+
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="card text-center bg-gradient-to-br from-green-100 to-green-200">
@@ -114,19 +122,19 @@ const Profile = () => {
           <div className="text-2xl font-bold">{stats.totalStamps}</div>
           <div className="text-sm text-gray-600">Stamps Earned</div>
         </div>
-        
+
         <div className="card text-center bg-gradient-to-br from-blue-100 to-blue-200">
           <Trophy className="mx-auto mb-2 text-nature-blue" size={32} />
           <div className="text-2xl font-bold">{stats.quizzesCompleted}</div>
           <div className="text-sm text-gray-600">Quizzes Done</div>
         </div>
-        
+
         <div className="card text-center bg-gradient-to-br from-purple-100 to-purple-200">
           <Star className="mx-auto mb-2 text-nature-purple" size={32} />
           <div className="text-2xl font-bold">{stats.modulesFinished}</div>
           <div className="text-sm text-gray-600">Modules Complete</div>
         </div>
-        
+
         <div className="card text-center bg-gradient-to-br from-orange-100 to-orange-200">
           <User className="mx-auto mb-2 text-nature-orange" size={32} />
           <div className="text-2xl font-bold">{stats.averageScore}%</div>
