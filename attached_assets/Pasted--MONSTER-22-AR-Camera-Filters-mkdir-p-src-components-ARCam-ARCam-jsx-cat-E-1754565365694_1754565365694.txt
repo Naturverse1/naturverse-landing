@@ -1,0 +1,78 @@
+# MONSTER 22: AR Camera + Filters
+
+mkdir -p src/components/ARCam
+
+# --- ARCam.jsx ---
+cat << 'EOF' > src/components/ARCam/ARCam.jsx
+import { useEffect, useRef, useState } from "react";
+
+const ARCam = () => {
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
+  const [overlay, setOverlay] = useState("ears"); // default filter
+
+  useEffect(() => {
+    const getCamera = async () => {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      videoRef.current.srcObject = stream;
+    };
+    getCamera();
+  }, []);
+
+  useEffect(() => {
+    const draw = () => {
+      const canvas = canvasRef.current;
+      const video = videoRef.current;
+      if (canvas && video) {
+        const ctx = canvas.getContext("2d");
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        const img = new Image();
+        img.src = `/filters/${overlay}.png`;
+        img.onload = () => {
+          const w = canvas.width * 0.3;
+          const h = canvas.height * 0.3;
+          ctx.drawImage(img, canvas.width / 2 - w / 2, canvas.height * 0.1, w, h);
+        };
+      }
+      requestAnimationFrame(draw);
+    };
+    requestAnimationFrame(draw);
+  }, [overlay]);
+
+  return (
+    <div className="p-4 text-center">
+      <h1 className="text-3xl font-bold mb-4">🎭 Become Your Navatar</h1>
+      <p className="mb-4">Turn on your camera and choose your magic look!</p>
+
+      <div className="flex justify-center mb-4">
+        <button onClick={() => setOverlay("ears")} className="mx-2 px-4 py-2 bg-pink-500 text-white rounded">🐰 Bunny Ears</button>
+        <button onClick={() => setOverlay("crown")} className="mx-2 px-4 py-2 bg-yellow-500 text-white rounded">👑 Crown</button>
+        <button onClick={() => setOverlay("turian")} className="mx-2 px-4 py-2 bg-green-500 text-white rounded">🐢 Turian Shell</button>
+      </div>
+
+      <div className="relative inline-block">
+        <video ref={videoRef} autoPlay playsInline muted className="rounded-md shadow-md" style={{ display: "none" }} />
+        <canvas ref={canvasRef} className="rounded-md border-4 border-blue-500" />
+      </div>
+    </div>
+  );
+};
+
+export default ARCam;
+EOF
+
+# --- Add route ---
+sed -i '/react-router-dom/a import ARCam from "./components/ARCam/ARCam.jsx";' src/App.jsx
+sed -i '/<Routes>/a <Route path="/ar-cam" element={<ARCam />} />' src/App.jsx
+
+# --- Add filter images directory ---
+mkdir -p public/filters
+curl -s https://cdn.jsdelivr.net/gh/openai/chatgpt-naturverse/filters/ears.png --output public/filters/ears.png
+curl -s https://cdn.jsdelivr.net/gh/openai/chatgpt-naturverse/filters/crown.png --output public/filters/crown.png
+curl -s https://cdn.jsdelivr.net/gh/openai/chatgpt-naturverse/filters/turian.png --output public/filters/turian.png
+
+echo "✅ AR Camera is live at /ar-cam — Try your filters!"
