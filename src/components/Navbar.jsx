@@ -63,6 +63,9 @@ const Navbar = () => {
             >
               🗺️ Map
             </Link>
+            <Link to="/games" className="text-gray-600 hover:text-nature-green transition-colors">
+              🎮 Games
+            </Link>
             {user && (
               <button
                 onClick={handleSignOut}
@@ -132,6 +135,14 @@ const Navbar = () => {
               >
                 <User size={20} />
                 <span>Map</span>
+              </Link>
+              <Link
+                to="/games"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center space-x-2 text-gray-700 hover:text-nature-green transition-colors"
+              >
+                <Trophy size={20} />
+                <span>Games</span>
               </Link>
               <button
                 onClick={handleSignOut}
