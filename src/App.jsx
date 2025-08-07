@@ -23,6 +23,8 @@ import Events from './routes/Events'
 import VoiceQuest from './components/Voice/VoiceQuest'
 import ThailandiaMap from './components/Map/ThailandiaMap'
 import InventoryDrawer from './components/Inventory/InventoryDrawer'
+import RegionStorybook from './components/Storybook/RegionStorybook'
+import SelfieBooth from './components/SelfieCam/SelfieBooth'
 
 function App() {
   return (
@@ -52,6 +54,8 @@ function App() {
                 <Route path="/events" element={<Events />} />
                 <Route path="/voice" element={<VoiceQuest />} />
                 <Route path="/map" element={<ThailandiaMap />} />
+                <Route path="/storybook" element={<RegionStorybook />} />
+                <Route path="/selfie" element={<SelfieBooth />} />
               </Routes>
 
               {/* Global Inventory Drawer */}

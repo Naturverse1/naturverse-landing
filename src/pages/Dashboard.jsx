@@ -10,6 +10,8 @@ import Karaoke from '../components/KaraokeZone/Karaoke'
 import Wardrobe from '../components/Navatar/Wardrobe'
 import TutorBot from '../components/Naturversity/TutorBot'
 import Companion from '../components/PetCompanions/Companion'
+import RegionStorybook from '../components/Storybook/RegionStorybook'
+import SelfieBooth from '../components/SelfieCam/SelfieBooth'
 
 const Dashboard = () => {
   const { user } = useAuth()
@@ -131,6 +133,7 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <div className="space-y-6">
           <StoryBuilder />
+          <RegionStorybook region="Enchanted Forest" />
           <GiftCodeRedemption />
           <Karaoke />
         </div>
@@ -145,6 +148,7 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <Wardrobe />
         <Companion />
+        <SelfieBooth />
       </div>
     </div>
   )
