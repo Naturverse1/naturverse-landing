@@ -2,7 +2,8 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
-import { Users, Plus, MapPin, Clock, Crown } from 'lucide-react';
+import { Users, Plus, MapPin, Clock, Crown, BookOpen } from 'lucide-react';
+import CoOpNarrator from './CoOpNarrator';
 
 export default function LobbyList({ region = 'Thailandia' }) {
   const { user } = useAuth();
@@ -10,6 +11,8 @@ export default function LobbyList({ region = 'Thailandia' }) {
   const [newLobbyName, setNewLobbyName] = useState('');
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
+  const [activeQuest, setActiveQuest] = useState(null);
+  const [showNarrator, setShowNarrator] = useState(false);
 
   useEffect(() => {
     fetchLobbies();
@@ -160,6 +163,40 @@ export default function LobbyList({ region = 'Thailandia' }) {
 
   const userLobby = getUserLobby();
 
+  async function startQuest(lobbyId) {
+    try {
+      // Update lobby status to indicate quest is active
+      await supabase
+        .from('multiplayer_lobbies')
+        .update({ status: 'in_quest' })
+        .eq('id', lobbyId);
+
+      setActiveQuest(lobbyId);
+      setShowNarrator(true);
+      await fetchLobbies();
+    } catch (error) {
+      console.error('Error starting quest:', error);
+      alert('Failed to start quest. Please try again.');
+    }
+  }
+
+  async function endQuest() {
+    if (activeQuest) {
+      try {
+        await supabase
+          .from('multiplayer_lobbies')
+          .update({ status: 'open' })
+          .eq('id', activeQuest);
+
+        setActiveQuest(null);
+        setShowNarrator(false);
+        await fetchLobbies();
+      } catch (error) {
+        console.error('Error ending quest:', error);
+      }
+    }
+  }
+
   if (loading) {
     return (
       <div className="text-center py-8">
@@ -220,23 +257,57 @@ export default function LobbyList({ region = 'Thailandia' }) {
             <h3 className="font-semibold text-green-800">
               🎯 You're in: {userLobby.lobby_name}
             </h3>
-            <button
-              onClick={() => leaveLobby(userLobby.id)}
-              className="text-red-600 hover:text-red-800 text-sm"
-            >
-              Leave Lobby
-            </button>
+            <div className="flex items-center space-x-2">
+              {userLobby.status !== 'in_quest' ? (
+                <button
+                  onClick={() => startQuest(userLobby.id)}
+                  className="bg-purple-500 text-white px-3 py-1 rounded text-sm hover:bg-purple-600 flex items-center space-x-1"
+                >
+                  <BookOpen size={14} />
+                  <span>Start Quest</span>
+                </button>
+              ) : (
+                <div className="flex items-center space-x-2">
+                  <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs">
+                    🎮 Quest Active
+                  </span>
+                  <button
+                    onClick={endQuest}
+                    className="text-orange-600 hover:text-orange-800 text-sm"
+                  >
+                    End Quest
+                  </button>
+                </div>
+              )}
+              <button
+                onClick={() => leaveLobby(userLobby.id)}
+                className="text-red-600 hover:text-red-800 text-sm"
+              >
+                Leave Lobby
+              </button>
+            </div>
           </div>
           <div className="flex items-center space-x-4 text-sm text-green-700">
             <div className="flex items-center space-x-1">
               <Users size={16} />
-              <span>{userLobby.current_players}/{userLobby.max_players} players</span>
+              <span>{userLobby.lobby_participants?.length || 0}/{userLobby.max_players} players</span>
             </div>
             <div className="flex items-center space-x-1">
               <Clock size={16} />
               <span>Created {new Date(userLobby.created_at).toLocaleTimeString()}</span>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Co-Op Narrator */}
+      {showNarrator && activeQuest && (
+        <div className="mt-6">
+          <CoOpNarrator 
+            lobbyId={activeQuest}
+            isActive={true}
+            onQuestComplete={endQuest}
+          />
         </div>
       )}
 
