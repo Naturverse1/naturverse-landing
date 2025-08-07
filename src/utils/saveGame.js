@@ -33,6 +33,20 @@ export async function loadGameState(userId) {
   return data
 }
 
+export async function updateEmotion(userId, emotion) {
+  const { error } = await supabase
+    .from('user_state')
+    .update({ emotion, updated_at: new Date().toISOString() })
+    .eq('user_id', userId)
+  
+  if (error) {
+    console.error('Error updating emotion:', error)
+    return { error }
+  }
+  
+  return { success: true }
+}
+
 export async function saveNavatar(userId, navatarData) {
   return await saveGameState(userId, { navatar_data: navatarData })
 }

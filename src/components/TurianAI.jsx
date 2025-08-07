@@ -1,8 +1,9 @@
 
 import React, { useState, useEffect, useRef } from 'react'
-import { MessageCircle, Send, X, Minimize2, Volume2, VolumeX, Sparkles, Zap, Mic, MicOff, Calendar, BookOpen, Users, Trophy, Star } from 'lucide-react'
+import { MessageCircle, Send, X, Minimize2, Volume2, VolumeX, Sparkles, Zap, Mic, MicOff, Calendar, BookOpen, Users, Trophy, Star, Heart, Frown, Smile } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { useTranslation } from 'react-i18next'
+import { updateEmotion, loadGameState } from '../utils/saveGame'
 
 const TurianAI = () => {
   const [isOpen, setIsOpen] = useState(false)
@@ -28,6 +29,11 @@ const TurianAI = () => {
   const [quizAnswers, setQuizAnswers] = useState([])
   const [quizResults, setQuizResults] = useState(null)
   const [userStats, setUserStats] = useState({})
+  
+  // Emotion and mood tracking
+  const [currentEmotion, setCurrentEmotion] = useState('neutral')
+  const [emotionHistory, setEmotionHistory] = useState([])
+  const [showEmotionPicker, setShowEmotionPicker] = useState(false)
   
   const { user } = useAuth()
   const { t, i18n } = useTranslation()
@@ -68,6 +74,39 @@ const TurianAI = () => {
 
   const navatarKeys = ['fruit', 'color', 'outfit', 'powers']
 
+  const emotions = {
+    happy: { emoji: '😊', color: 'text-yellow-500', description: 'Happy' },
+    sad: { emoji: '😢', color: 'text-blue-500', description: 'Sad' },
+    excited: { emoji: '🤗', color: 'text-orange-500', description: 'Excited' },
+    confused: { emoji: '😕', color: 'text-purple-500', description: 'Confused' },
+    frustrated: { emoji: '😤', color: 'text-red-500', description: 'Frustrated' },
+    curious: { emoji: '🤔', color: 'text-green-500', description: 'Curious' },
+    proud: { emoji: '😎', color: 'text-indigo-500', description: 'Proud' },
+    neutral: { emoji: '😐', color: 'text-gray-500', description: 'Neutral' }
+  }
+
+  const detectMoodFromMessage = (message) => {
+    const lowerMessage = message.toLowerCase()
+    
+    if (lowerMessage.includes('great') || lowerMessage.includes('awesome') || lowerMessage.includes('love') || lowerMessage.includes('amazing')) {
+      return 'happy'
+    } else if (lowerMessage.includes('sad') || lowerMessage.includes('upset') || lowerMessage.includes('bad') || lowerMessage.includes('terrible')) {
+      return 'sad'
+    } else if (lowerMessage.includes('wow') || lowerMessage.includes('cool') || lowerMessage.includes('excited') || lowerMessage.includes('!')) {
+      return 'excited'
+    } else if (lowerMessage.includes('confused') || lowerMessage.includes('don\'t understand') || lowerMessage.includes('what') || lowerMessage.includes('how')) {
+      return 'confused'
+    } else if (lowerMessage.includes('frustrated') || lowerMessage.includes('annoying') || lowerMessage.includes('difficult') || lowerMessage.includes('hard')) {
+      return 'frustrated'
+    } else if (lowerMessage.includes('curious') || lowerMessage.includes('wonder') || lowerMessage.includes('interested') || lowerMessage.includes('why')) {
+      return 'curious'
+    } else if (lowerMessage.includes('proud') || lowerMessage.includes('accomplished') || lowerMessage.includes('did it') || lowerMessage.includes('finished')) {
+      return 'proud'
+    }
+    
+    return 'neutral'
+  }
+
   useEffect(() => {
     // Initialize Speech Recognition
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
@@ -97,8 +136,22 @@ const TurianAI = () => {
     if (isOpen && user && !user.isGuest) {
       loadChatHistory()
       loadUserStats()
+      loadUserEmotion()
     }
   }, [isOpen, user])
+
+  const loadUserEmotion = async () => {
+    if (!user || user.isGuest) return
+    
+    try {
+      const gameState = await loadGameState(user.id)
+      if (gameState?.emotion) {
+        setCurrentEmotion(gameState.emotion)
+      }
+    } catch (error) {
+      console.error('Failed to load user emotion:', error)
+    }
+  }
 
   useEffect(() => {
     scrollToBottom()
@@ -321,6 +374,35 @@ const TurianAI = () => {
     setSessionMemory(newMemory)
   }
 
+  const updateUserEmotion = async (emotion) => {
+    if (!user || user.isGuest) return
+    
+    setCurrentEmotion(emotion)
+    setEmotionHistory(prev => [...prev.slice(-9), { emotion, timestamp: Date.now() }])
+    
+    try {
+      await updateEmotion(user.id, emotion)
+    } catch (error) {
+      console.error('Failed to update emotion:', error)
+    }
+  }
+
+  const getMoodAwareResponse = (baseResponse, emotion) => {
+    const moodResponses = {
+      happy: "I can sense your joy! That makes my shell sparkle with happiness! ✨",
+      sad: "I notice you might be feeling a bit down. Remember, every cloud has a silver lining! 🌈",
+      excited: "Wow, your excitement is contagious! I'm getting pumped up too! 🎉",
+      confused: "I can tell you're puzzled. Don't worry, confusion is just the first step to understanding! 💡",
+      frustrated: "I sense some frustration. Take a deep breath with me... We'll figure this out together! 🌸",
+      curious: "Your curiosity is wonderful! Questions are the seeds of knowledge! 🌱",
+      proud: "I can feel your pride radiating! You should be proud - you've accomplished something great! 🏆",
+      neutral: ""
+    }
+    
+    const moodPrefix = moodResponses[emotion] || ""
+    return moodPrefix ? `${moodPrefix}\n\n${baseResponse}` : baseResponse
+  }
+
   const sendMessage = async (customMessage = null) => {
     const userMessage = customMessage || message.trim()
     if (!userMessage) return
@@ -372,9 +454,20 @@ const TurianAI = () => {
     }
 
     try {
+      // Detect emotion from user message
+      const detectedEmotion = detectMoodFromMessage(userMessage)
+      if (detectedEmotion !== currentEmotion) {
+        await updateUserEmotion(detectedEmotion)
+      }
+
       // Use session memory for context
       const chatHistory = sessionMemory
       const character = characters[selectedCharacter]
+
+      // Add emotion context to the prompt
+      const emotionContext = currentEmotion !== 'neutral' 
+        ? `The user seems to be feeling ${currentEmotion}. Please respond with empathy and appropriate emotional support.`
+        : ''
 
       const response = await fetch('/api/turian', {
         method: 'POST',
@@ -382,7 +475,7 @@ const TurianAI = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ 
-          message: `${character.systemPrompt}\n\nUser: ${userMessage}`, 
+          message: `${character.systemPrompt}\n\n${emotionContext}\n\nUser: ${userMessage}`, 
           userId: user && !user.isGuest ? user.id : null,
           chatHistory,
           language: i18n.language
@@ -392,9 +485,10 @@ const TurianAI = () => {
       const data = await response.json()
       
       if (response.ok) {
-        setConversation(prev => [...prev, { type: 'turian', content: data.message }])
-        speakText(data.message)
-        addToSessionMemory(userMessage, data.message)
+        const moodAwareResponse = getMoodAwareResponse(data.message, currentEmotion)
+        setConversation(prev => [...prev, { type: 'turian', content: moodAwareResponse }])
+        speakText(moodAwareResponse)
+        addToSessionMemory(userMessage, moodAwareResponse)
         
         // Check for quest completion or exciting moments to show NFT button
         if ((data.message.toLowerCase().includes('quest') || 
@@ -570,6 +664,51 @@ const TurianAI = () => {
                   {userStats.averageScore || 0}% Avg
                 </span>
               </div>
+            </div>
+          )}
+
+          {/* Emotion Tracker */}
+          {user && !user.isGuest && (
+            <div className="px-3 py-2 bg-gradient-to-r from-pink-100 to-purple-100 border-b">
+              <div className="flex justify-between items-center">
+                <div className="flex items-center space-x-2">
+                  <Heart size={12} className="text-pink-600" />
+                  <span className="text-xs font-medium">Mood:</span>
+                  <span className={`text-sm ${emotions[currentEmotion]?.color}`}>
+                    {emotions[currentEmotion]?.emoji} {emotions[currentEmotion]?.description}
+                  </span>
+                </div>
+                <button
+                  onClick={() => setShowEmotionPicker(!showEmotionPicker)}
+                  className="text-xs bg-white/50 hover:bg-white/70 px-2 py-1 rounded transition-colors"
+                >
+                  Change
+                </button>
+              </div>
+              
+              {/* Emotion Picker */}
+              {showEmotionPicker && (
+                <div className="mt-2 grid grid-cols-4 gap-1">
+                  {Object.entries(emotions).map(([emotion, config]) => (
+                    <button
+                      key={emotion}
+                      onClick={() => {
+                        updateUserEmotion(emotion)
+                        setShowEmotionPicker(false)
+                      }}
+                      className={`p-1 text-xs rounded hover:bg-white/50 transition-colors ${
+                        emotion === currentEmotion ? 'bg-white/70' : ''
+                      }`}
+                      title={config.description}
+                    >
+                      <div className="flex flex-col items-center">
+                        <span className="text-sm">{config.emoji}</span>
+                        <span className={`text-xs ${config.color}`}>{config.description}</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
