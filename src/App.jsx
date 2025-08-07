@@ -30,6 +30,7 @@ import ThailandiaMap from './components/Map/ThailandiaMap'
 import InventoryDrawer from './components/Inventory/InventoryDrawer'
 import RegionStorybook from './components/Storybook/RegionStorybook'
 import SelfieBooth from './components/SelfieCam/SelfieBooth'
+import Trading from './pages/Trading'
 
 function AppContent() {
   const { user } = useAuth()
@@ -87,6 +88,7 @@ function AppContent() {
             <Route path="/map" element={<ThailandiaMap />} />
             <Route path="/storybook" element={<RegionStorybook />} />
             <Route path="/selfie" element={<SelfieBooth />} />
+            <Route path="/trading" element={<Trading />} />
           </Routes>
 
           {/* Global Inventory Drawer */}

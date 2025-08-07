@@ -603,6 +603,79 @@ if (typeof window === 'undefined') {
     }
   })
 
+  // Execute Trade Route
+  app.post('/api/execute-trade', async (req, res) => {
+    try {
+      const { tradeId } = req.body
+      const { createClient } = require('@supabase/supabase-js')
+      const supabase = createClient(
+        process.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co',
+        process.env.VITE_SUPABASE_ANON_KEY || 'placeholder'
+      )
+
+      // Get trade details
+      const { data: trade, error: tradeError } = await supabase
+        .from('item_trades')
+        .select('*')
+        .eq('id', tradeId)
+        .eq('status', 'accepted')
+        .single()
+
+      if (tradeError || !trade) {
+        return res.status(404).json({ error: 'Trade not found or not accepted' })
+      }
+
+      // Verify both users still have the items
+      const [senderInv, receiverInv] = await Promise.all([
+        supabase
+          .from('user_inventory')
+          .select('*')
+          .eq('user_id', trade.sender_id)
+          .eq('item_id', trade.offered_item_id)
+          .gte('quantity', trade.offer_quantity || 1)
+          .single(),
+        supabase
+          .from('user_inventory')
+          .select('*')
+          .eq('user_id', trade.receiver_id)
+          .eq('item_id', trade.requested_item_id)
+          .gte('quantity', trade.request_quantity || 1)
+          .single()
+      ])
+
+      if (senderInv.error || receiverInv.error) {
+        return res.status(400).json({ error: 'One or both users no longer have the required items' })
+      }
+
+      // Execute the trade in a transaction
+      const { error: transactionError } = await supabase.rpc('execute_item_trade', {
+        trade_id: tradeId,
+        sender_id: trade.sender_id,
+        receiver_id: trade.receiver_id,
+        offered_item_id: trade.offered_item_id,
+        requested_item_id: trade.requested_item_id,
+        offer_qty: trade.offer_quantity || 1,
+        request_qty: trade.request_quantity || 1
+      })
+
+      if (transactionError) {
+        console.error('Trade execution error:', transactionError)
+        return res.status(500).json({ error: 'Failed to execute trade' })
+      }
+
+      // Update trade status to completed
+      await supabase
+        .from('item_trades')
+        .update({ status: 'completed', updated_at: new Date().toISOString() })
+        .eq('id', tradeId)
+
+      res.json({ success: true, message: 'Trade completed successfully!' })
+    } catch (error) {
+      console.error('Execute trade error:', error)
+      res.status(500).json({ message: 'Failed to execute trade' })
+    }
+  })
+
   // AI Lesson Generation Route
   app.post('/api/ai-lesson', async (req, res) => {
     try {

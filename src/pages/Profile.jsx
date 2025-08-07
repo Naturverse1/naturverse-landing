@@ -4,6 +4,7 @@ import { User, Award, Trophy, Star, Edit2, Save } from 'lucide-react'
 import ConnectWallet from '../components/ConnectWallet'
 import BadgeDisplay from '../components/Badges/BadgeDisplay'
 import InventoryDisplay from '../components/Inventory/InventoryDisplay'
+import LobbyList from '../components/Multiplayer/LobbyList';
 
 const Profile = () => {
   const { user } = useAuth()
@@ -188,10 +189,11 @@ const Profile = () => {
 
         {/* Inventory Section */}
         <div className="card mt-8">
-          <h2 className="text-2xl font-bold text-nature-green mb-4">
-            🎒 Your Inventory
-          </h2>
+          <h2 className="text-lg font-bold mt-6 mb-2">🎒 Your Inventory</h2>
           <InventoryDisplay userId={user?.id} />
+
+          <h2 className="text-lg font-bold mt-6 mb-2">🌍 Multiplayer Lobbies</h2>
+          <LobbyList userId={user?.id} />
         </div>
       </div>
     </div>
