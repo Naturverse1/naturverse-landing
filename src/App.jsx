@@ -3,6 +3,7 @@ import React from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import Navbar from './components/Navbar'
+import TurianAI from './components/TurianAI'
 import Home from './pages/Home'
 import Dashboard from './pages/Dashboard'
 import Learning from './pages/Learning'
@@ -28,6 +29,7 @@ function App() {
               <Route path="/admin" element={<Admin />} />
             </Routes>
           </main>
+          <TurianAI />
         </div>
       </Router>
     </AuthProvider>

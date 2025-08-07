@@ -1,6 +1,50 @@
 import { testSupabase } from './testSupabase.js'
 import { signUp, signIn, signOut, signInWithGoogle } from './auth.js'
 import { searchContent } from './userFeatures.js'
+import OpenAI from 'openai'
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+})
+
+// Handle Turian AI POST requests
+if (typeof window === 'undefined') {
+  const express = require('express')
+  const app = express()
+  
+  app.use(express.json())
+  
+  app.post('/api/turian', async (req, res) => {
+    try {
+      const { message } = req.body
+      
+      const completion = await openai.chat.completions.create({
+        model: "gpt-3.5-turbo",
+        messages: [
+          {
+            role: "system",
+            content: "You are Turian the magical durian turtle, a playful big brother in a fantasy learning world called The Naturverse™."
+          },
+          {
+            role: "user",
+            content: message
+          }
+        ],
+        max_tokens: 150
+      })
+      
+      res.json({ message: completion.choices[0].message.content })
+    } catch (error) {
+      console.error('OpenAI API error:', error)
+      res.status(500).json({ error: 'Failed to get response from Turian' })
+    }
+  })
+  
+  const PORT = process.env.PORT || 3001
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Turian API server running on port ${PORT}`)
+  })
+}
 
 document.addEventListener('DOMContentLoaded', () => {
   const button = document.getElementById('testButton')
