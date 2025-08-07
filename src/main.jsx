@@ -7,7 +7,21 @@ import './i18n'
 // Add speech recognition support
 window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
-ReactDOM.createRoot(document.getElementById('root')).render(
+// Add error handling
+window.addEventListener('error', (event) => {
+  console.error('Global error:', event.error)
+})
+
+window.addEventListener('unhandledrejection', (event) => {
+  console.error('Unhandled promise rejection:', event.reason)
+})
+
+const root = document.getElementById('root')
+if (!root) {
+  throw new Error('Root element not found')
+}
+
+ReactDOM.createRoot(root).render(
   <React.StrictMode>
     <App />
   </React.StrictMode>,

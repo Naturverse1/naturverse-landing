@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
@@ -29,7 +28,7 @@ const Home = () => {
       const { error } = isSignUp 
         ? await signUp(email, password)
         : await signIn(email, password)
-      
+
       if (error) {
         setError(error.message)
       }

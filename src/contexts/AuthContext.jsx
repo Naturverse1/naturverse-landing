@@ -1,8 +1,7 @@
-
-import React, { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 
-const AuthContext = createContext()
+const AuthContext = createContext({})
 
 export const useAuth = () => {
   const context = useContext(AuthContext)
@@ -15,83 +14,123 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
-    // Get initial session
-    const getSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      setUser(session?.user || null)
-      setLoading(false)
+    let mounted = true
+
+    const initializeAuth = async () => {
+      try {
+        // Get initial session
+        const { data: { session }, error } = await supabase.auth.getSession()
+        if (error) throw error
+
+        if (mounted) {
+          setUser(session?.user ?? null)
+          setLoading(false)
+        }
+      } catch (err) {
+        console.error('Auth initialization error:', err)
+        if (mounted) {
+          setError(err.message)
+          setLoading(false)
+        }
+      }
     }
 
-    getSession()
+    initializeAuth()
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setUser(session?.user || null)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (mounted) {
+        setUser(session?.user ?? null)
         setLoading(false)
+        setError(null)
       }
-    )
+    })
 
-    return () => subscription.unsubscribe()
+    return () => {
+      mounted = false
+      subscription.unsubscribe()
+    }
   }, [])
 
-  const signUp = async (email, password) => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-    })
-    return { data, error }
-  }
-
-  const signIn = async (email, password) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
-    return { data, error }
-  }
-
-  const signInWithGoogle = async () => {
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: window.location.origin
-      }
-    })
-    return { data, error }
-  }
-
-  const signInAsGuest = () => {
-    const guestUser = {
-      id: crypto.randomUUID(),
-      email: null,
-      isGuest: true,
-      user_metadata: {
-        username: `Guest-${Math.floor(Math.random() * 9000) + 1000}`,
-        avatar_url: 'https://placehold.co/100x100'
-      }
+  const signInWithEmail = async (email, password) => {
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      })
+      return { data, error }
+    } catch (err) {
+      console.error('Sign in error:', err)
+      return { data: null, error: err }
     }
-    setUser(guestUser)
-    localStorage.setItem('guest_user', JSON.stringify(guestUser))
+  }
+
+  const signUpWithEmail = async (email, password, metadata = {}) => {
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: metadata
+        }
+      })
+      return { data, error }
+    } catch (err) {
+      console.error('Sign up error:', err)
+      return { data: null, error: err }
+    }
   }
 
   const signOut = async () => {
-    localStorage.removeItem('guest_user')
-    const { error } = await supabase.auth.signOut()
-    setUser(null)
-    return { error }
+    try {
+      const { error } = await supabase.auth.signOut()
+      return { error }
+    } catch (err) {
+      console.error('Sign out error:', err)
+      return { error: err }
+    }
   }
 
   const value = {
     user,
     loading,
-    signUp,
-    signIn,
-    signInWithGoogle,
-    signInAsGuest,
-    signOut,
+    error,
+    signInWithEmail,
+    signUpWithEmail,
+    signOut
+  }
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading The Naturverse...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-red-600 mb-4">Connection Error</h1>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="bg-blue-500 text-white px-4 py-2 rounded"
+          >
+            Reload Page
+          </button>
+        </div>
+      </div>
+    )
   }
 
   return (
