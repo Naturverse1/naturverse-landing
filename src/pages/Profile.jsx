@@ -103,7 +103,7 @@ const Profile = () => {
               onClick={() => setIsEditing(true)}
               className="btn-secondary flex items-center mx-auto"
             >
-              <Edit2 className="mr-2" size={20} />
+              <Edit2 className="mr-2" size={20} />>
               Edit Profile
             </button>
           </div>
