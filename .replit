@@ -14,3 +14,19 @@ externalPort = 80
 [[ports]]
 localPort = 3001
 externalPort = 3001
+
+[[ports]]
+localPort = 5000
+externalPort = 5000
+
+[workflows]
+runButton = "Static Server"
+
+[[workflows.workflow]]
+name = "Static Server"
+author = 46050130
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npx serve -s . -p 5000"
