@@ -1,0 +1,21 @@
+# 1. Install new packages
+npm install react-confetti react-icons react-responsive react-select
+
+# 2. Create directories & components
+mkdir -p src/components/StoryBuilder src/components/Marketplace src/components/Weather src/components/GiftCode
+touch src/components/StoryBuilder/StoryBuilder.jsx \
+      src/components/Marketplace/Inventory.jsx \
+      src/components/Weather/WeatherWidget.jsx \
+      src/components/GiftCode/GiftCodeRedemption.jsx
+
+# 3. Create AI Story Builder
+echo "import React, { useState } from 'react'; export default function StoryBuilder() { const [prompt, setPrompt] = useState(''); const [story, setStory] = useState(''); const generateStory = async () => { const res = await fetch('/api/turian', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: prompt }) }); const data = await res.json(); setStory(data.response); }; return (<div className='p-4'><h2>📝 AI Story Builder</h2><textarea value={prompt} onChange={(e) => setPrompt(e.target.value)} placeholder='Type your story idea...' className='w-full p-2 border rounded mb-2'></textarea><button onClick={generateStory} className='bg-green-500 text-white px-4 py-2 rounded'>Generate</button><div className='mt-4 whitespace-pre-line'>{story}</div></div>); }" > src/components/StoryBuilder/StoryBuilder.jsx
+
+# 4. Create Marketplace Inventory display
+echo "import React from 'react'; export default function Inventory() { const items = ['🍍 Pineapple Sword', '🎒 Nature Backpack', '🎭 Festival Mask']; return (<div className='p-4'><h2>🎒 Your Inventory</h2><ul className='list-disc pl-6'>{items.map((item, idx) => <li key={idx}>{item}</li>)}</ul></div>); }" > src/components/Marketplace/Inventory.jsx
+
+# 5. Create Weather Widget (mock)
+echo "import React from 'react'; export default function WeatherWidget() { return (<div className='bg-blue-200 p-3 rounded'><h3>🌦️ Thailandia Weather</h3><p>Sunny 🌞 – 32°C</p></div>); }" > src/components/Weather/WeatherWidget.jsx
+
+# 6. Create Gift Code Redemption
+echo "import React, { useState } from 'react'; export default function GiftCodeRedemption() { const [code, setCode] = useState(''); const [message, setMessage] = useState(''); const redeem = () => { if (code === 'NATUR100') setMessage('🎁 You unlocked 100 $NATUR!'); else setMessage('❌ Invalid code.'); }; return (<div className='p-4'><h2>🎁 Redeem Gift Code</h2><input value={code} onChange={(e) => setCode(e.target.value)} placeholder='Enter your code' className='p-2 border rounded mr-2' /><button onClick={redeem} className='bg-yellow-500 text-white px-4
