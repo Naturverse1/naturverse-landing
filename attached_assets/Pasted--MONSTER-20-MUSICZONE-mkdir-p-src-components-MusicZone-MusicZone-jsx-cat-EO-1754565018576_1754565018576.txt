@@ -1,0 +1,117 @@
+# MONSTER 20: MUSICZONE™
+
+mkdir -p src/components/MusicZone
+
+# --- MusicZone.jsx ---
+cat << 'EOF' > src/components/MusicZone/MusicZone.jsx
+import { useState } from "react";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY);
+
+const defaultBeats = [
+  { name: "🌴 Jungle Beat", url: "https://cdn.pixabay.com/audio/2022/03/15/audio_d9a9d65b69.mp3" },
+  { name: "💦 Lotus Flow", url: "https://cdn.pixabay.com/audio/2022/03/15/audio_5e5b29a4c7.mp3" },
+  { name: "🐸 Froggy Funk", url: "https://cdn.pixabay.com/audio/2022/03/15/audio_7d38d26e65.mp3" },
+];
+
+const MusicZone = () => {
+  const [selectedBeat, setSelectedBeat] = useState(null);
+  const [recording, setRecording] = useState(false);
+  const [audioUrl, setAudioUrl] = useState(null);
+  const [songName, setSongName] = useState("");
+
+  const startRecording = async () => {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const mediaRecorder = new MediaRecorder(stream);
+    const chunks = [];
+
+    mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
+    mediaRecorder.onstop = async () => {
+      const blob = new Blob(chunks, { type: "audio/webm" });
+      const url = URL.createObjectURL(blob);
+      setAudioUrl(url);
+
+      // Upload to Supabase
+      const filePath = `songs/${Date.now()}-${Math.random()}.webm`;
+      const { data, error } = await supabase.storage.from("avatars").upload(filePath, blob, {
+        contentType: "audio/webm",
+      });
+      if (!error) {
+        const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(filePath);
+        await supabase.from("learning_modules").insert({
+          title: songName || "Untitled Song",
+          description: "MusicZone Recording",
+          content_type: "music",
+          region: "Royal Canopy",
+          age_group: "6-12",
+          media_urls: { audio: publicUrl },
+        });
+        alert("🎶 Song saved to your profile!");
+      }
+    };
+
+    mediaRecorder.start();
+    setRecording(true);
+    setTimeout(() => {
+      mediaRecorder.stop();
+      setRecording(false);
+    }, 10000); // 10 sec max
+  };
+
+  return (
+    <div className="p-6 text-center max-w-2xl mx-auto">
+      <h1 className="text-3xl font-bold mb-4">🎤 MusicZone™</h1>
+      <p className="mb-2 text-gray-600">Compose, record, and sing with Turian & The Ribbits!</p>
+
+      <input
+        type="text"
+        placeholder="🎶 Name your song"
+        className="border px-3 py-2 rounded my-4 w-full"
+        value={songName}
+        onChange={(e) => setSongName(e.target.value)}
+      />
+
+      <div className="flex flex-col gap-3">
+        {defaultBeats.map((b, i) => (
+          <button key={i} onClick={() => setSelectedBeat(b)} className="bg-purple-500 hover:bg-purple-600 text-white rounded py-2">
+            🎵 {b.name}
+          </button>
+        ))}
+      </div>
+
+      {selectedBeat && (
+        <div className="mt-6">
+          <h2 className="text-xl font-semibold">Now Playing: {selectedBeat.name}</h2>
+          <audio controls src={selectedBeat.url} className="mt-2 w-full" autoPlay />
+        </div>
+      )}
+
+      <div className="mt-6">
+        {!recording ? (
+          <button onClick={startRecording} className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded">
+            🎙️ Start Recording (10s)
+          </button>
+        ) : (
+          <p className="text-red-500 font-bold mt-4">⏺ Recording...</p>
+        )}
+      </div>
+
+      {audioUrl && (
+        <div className="mt-6">
+          <h3 className="text-lg font-semibold">🔁 Playback:</h3>
+          <audio controls src={audioUrl} className="w-full mt-2" />
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default MusicZone;
+EOF
+
+# --- Add route to App.jsx ---
+sed -i '/react-router-dom/a import MusicZone from "./components/MusicZone/MusicZone.jsx";' src/App.jsx
+sed -i '/<Routes>/a <Route path="/musiczone" element={<MusicZone />} />' src/App.jsx
+
+echo "✅ MusicZone™ live at /musiczone"
