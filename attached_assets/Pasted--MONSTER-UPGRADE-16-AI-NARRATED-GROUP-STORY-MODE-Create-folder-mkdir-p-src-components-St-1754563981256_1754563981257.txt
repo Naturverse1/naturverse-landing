@@ -1,0 +1,99 @@
+# 🧙 MONSTER UPGRADE 16: AI-NARRATED GROUP STORY MODE
+
+# Create folder
+mkdir -p src/components/StoryMode && cd src/components/StoryMode
+
+# Create StoryMode.jsx
+cat << 'EOF' > StoryMode.jsx
+import { useEffect, useState } from 'react';
+import { useSpeechSynthesis } from 'react-speech-kit';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY);
+
+const StoryMode = ({ user }) => {
+  const { speak, voices } = useSpeechSynthesis();
+  const [storyLog, setStoryLog] = useState([]);
+  const [currentPart, setCurrentPart] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [voteOptions, setVoteOptions] = useState([]);
+  const [selected, setSelected] = useState('');
+
+  const region = 'Thailandia'; // For now, hardcoded
+
+  const getNextStoryPart = async (choice) => {
+    setLoading(true);
+    const systemPrompt = `
+You are Turian the magical durian turtle 🐢🍃. Narrate an adventurous children's fantasy story set in the region of ${region}. The users are in a group and must vote on what to do next. Always end with 3 short choices for what they could do next. Use kid-friendly language.`;
+
+    const res = await fetch('/api/turian', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: choice || 'Start the story with our heroes arriving in Thailandia.' }
+        ]
+      })
+    });
+    const data = await res.json();
+    const reply = data.response;
+
+    const newEntry = { text: reply, choice };
+    setStoryLog([...storyLog, newEntry]);
+    setCurrentPart(reply);
+    setLoading(false);
+
+    const choices = reply.match(/1\..*|2\..*|3\..*/g) || [];
+    setVoteOptions(choices);
+    speak({ text: reply, voice: voices.find(v => v.lang.includes('en')) });
+  };
+
+  useEffect(() => { getNextStoryPart(); }, []);
+
+  return (
+    <div className="p-4 max-w-3xl mx-auto">
+      <h1 className="text-3xl font-bold mb-4">📖 Group Story Mode</h1>
+      <div className="bg-white shadow rounded p-4 mb-4 space-y-2">
+        {storyLog.map((entry, i) => (
+          <div key={i}>
+            {entry.choice && <p className="text-sm italic text-gray-500">👥 Voted: {entry.choice}</p>}
+            <p className="mb-2">{entry.text}</p>
+          </div>
+        ))}
+      </div>
+      {loading && <p>Loading next chapter...</p>}
+      {!loading && voteOptions.length > 0 && (
+        <div className="space-y-2">
+          <h2 className="font-semibold">What should our group do next?</h2>
+          {voteOptions.map((option, i) => (
+            <button
+              key={i}
+              onClick={() => {
+                setSelected(option);
+                getNextStoryPart(option);
+              }}
+              className="block w-full bg-green-200 hover:bg-green-300 p-2 rounded text-left"
+            >
+              {option}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default StoryMode;
+EOF
+
+# ✅ Route to StoryMode in App.jsx
+cd ../../
+sed -i '/import { BrowserRouter as Router, Route, Routes } from "react-router-dom";/a import StoryMode from "./components/StoryMode/StoryMode.jsx";' App.jsx
+sed -i '/<Routes>/a <Route path="/story" element={<StoryMode user={user} />} />' App.jsx
+
+# ✅ API route already exists at /api/turian
+
+# ✅ Done
+echo "🎉 AI-Narrated Group Story Mode enabled at /story"
+echo "Next: Navigate to http://localhost:5000/story (or your live domain) to test!"
