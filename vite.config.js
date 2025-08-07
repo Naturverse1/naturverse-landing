@@ -4,24 +4,16 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  define: {
-    global: 'globalThis',
-    'process.env': {}
-  },
   server: {
-    host: '0.0.0.0',
-    port: 5173,
+    port: 5000,
     strictPort: true,
+    host: true,
     watch: {
       usePolling: true
     },
     hmr: {
       clientPort: 443
     },
-    allowedHosts: [
-      '.replit.dev',
-      'localhost',
-      '*'
-    ]
+    allowedHosts: ['*']
   }
 })
