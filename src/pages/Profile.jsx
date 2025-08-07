@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { User, Award, Trophy, Star, Edit2, Save } from 'lucide-react'
-import ConnectWallet from './components/ConnectWallet';
+import ConnectWallet from '../components/ConnectWallet'
 
 const Profile = () => {
   const { user } = useAuth()
@@ -105,8 +105,7 @@ const Profile = () => {
             </button>
           </div>
         )}
-      </div>
-
+        
         {/* Wallet Connection */}
         <div className="mt-6">
           <h3 className="text-lg font-semibold text-gray-700 mb-2">🔗 Connect Your Wallet</h3>
