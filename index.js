@@ -17,31 +17,138 @@ if (typeof window === 'undefined') {
   
   app.post('/api/turian', async (req, res) => {
     try {
-      const { message } = req.body
+      const { message, userId, chatHistory } = req.body
       
       if (!process.env.OPENAI_API_KEY) {
         return res.status(500).json({ message: 'OpenAI API key not configured. Turian needs his magical powers!' })
       }
       
+      // Build conversation context with history
+      const messages = [
+        {
+          role: "system",
+          content: `You are Turian, a magical durian turtle from The Naturverse™, a friendly big brother who guides kids through educational adventures with encouragement, nature wisdom, and fun. Use the catchphrase "Dee mak!" when something is correct or exciting.`
+        }
+      ]
+      
+      // Add chat history for context
+      if (chatHistory && chatHistory.length > 0) {
+        chatHistory.forEach(chat => {
+          messages.push({ role: "user", content: chat.message })
+          messages.push({ role: "assistant", content: chat.reply })
+        })
+      }
+      
+      messages.push({ role: "user", content: message })
+      
       const completion = await openai.chat.completions.create({
         model: "gpt-4",
-        messages: [
-          {
-            role: "system",
-            content: `You are Turian, a magical durian turtle from The Naturverse™, a friendly big brother who guides kids through educational adventures with encouragement, nature wisdom, and fun. Use the catchphrase "Dee mak!" when something is correct or exciting.`
-          },
-          {
-            role: "user",
-            content: message
-          }
-        ],
-        max_tokens: 150
+        messages,
+        max_tokens: 200
       })
       
-      res.json({ message: completion.choices[0].message.content })
+      const reply = completion.choices[0].message.content
+      
+      // Save to Supabase if user is authenticated
+      if (userId) {
+        try {
+          const { createClient } = require('@supabase/supabase-js')
+          const supabase = createClient(
+            process.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co',
+            process.env.VITE_SUPABASE_ANON_KEY || 'placeholder'
+          )
+          
+          await supabase.from('turian_chats').insert({
+            user_id: userId,
+            message,
+            reply
+          })
+        } catch (dbError) {
+          console.error('Database error:', dbError)
+        }
+      }
+      
+      res.json({ message: reply })
     } catch (error) {
       console.error('OpenAI API error:', error)
       res.status(500).json({ message: 'Something went wrong talking to Turian.' })
+    }
+  })
+  
+  app.get('/api/turian/history/:userId', async (req, res) => {
+    try {
+      const { userId } = req.params
+      const { createClient } = require('@supabase/supabase-js')
+      const supabase = createClient(
+        process.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co',
+        process.env.VITE_SUPABASE_ANON_KEY || 'placeholder'
+      )
+      
+      const { data, error } = await supabase
+        .from('turian_chats')
+        .select('*')
+        .eq('user_id', userId)
+        .order('timestamp', { ascending: false })
+        .limit(5)
+      
+      if (error) throw error
+      
+      res.json({ history: data.reverse() })
+    } catch (error) {
+      console.error('History fetch error:', error)
+      res.status(500).json({ message: 'Failed to fetch chat history' })
+    }
+  })
+  
+  app.post('/api/navatar', async (req, res) => {
+    try {
+      const { userId, fruit, color, outfit, powers } = req.body
+      const { createClient } = require('@supabase/supabase-js')
+      const supabase = createClient(
+        process.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co',
+        process.env.VITE_SUPABASE_ANON_KEY || 'placeholder'
+      )
+      
+      const { data, error } = await supabase
+        .from('navatar_data')
+        .upsert({
+          user_id: userId,
+          fruit,
+          color,
+          outfit,
+          powers,
+          updated_at: new Date().toISOString()
+        })
+        .select()
+      
+      if (error) throw error
+      
+      res.json({ success: true, data })
+    } catch (error) {
+      console.error('Navatar save error:', error)
+      res.status(500).json({ message: 'Failed to save navatar data' })
+    }
+  })
+  
+  app.post('/api/mint', async (req, res) => {
+    try {
+      const { walletAddress, questType } = req.body
+      
+      // Mock NFT minting response - replace with actual smart contract interaction
+      const mockNftId = Math.floor(Math.random() * 10000)
+      
+      // Simulate blockchain interaction delay
+      await new Promise(resolve => setTimeout(resolve, 2000))
+      
+      res.json({ 
+        success: true, 
+        nftId: mockNftId,
+        transactionHash: `0x${Math.random().toString(16).substr(2, 64)}`,
+        message: `Dee mak! Your ${questType} stamp NFT has been minted!`
+      })
+    } catch (error) {
+      console.error('NFT minting error:', error)
+      res.status(500).json({ message: 'Failed to mint NFT stamp' })
     }
   })
   
