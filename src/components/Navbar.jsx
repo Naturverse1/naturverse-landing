@@ -75,6 +75,9 @@ const Navbar = () => {
             <Link to="/trading" className="nav-link">
               🔄 Trading
             </Link>
+            <Link to="/story" className="nav-link">
+              📚 Story Mode
+            </Link>
             {user && (
               <button
                 onClick={handleSignOut}
@@ -176,6 +179,14 @@ const Navbar = () => {
               >
                 <User size={20} />
                 <span>Trading</span>
+              </Link>
+              <Link
+                to="/story"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center space-x-2 text-gray-700 hover:text-nature-green transition-colors"
+              >
+                <User size={20} />
+                <span>Story Mode</span>
               </Link>
               <button
                 onClick={handleSignOut}
