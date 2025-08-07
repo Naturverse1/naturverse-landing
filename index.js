@@ -102,7 +102,7 @@ if (typeof window === 'undefined') {
   
   app.post('/api/navatar', async (req, res) => {
     try {
-      const { userId, fruit, color, outfit, powers } = req.body
+      const { userId, responses } = req.body
       const { createClient } = require('@supabase/supabase-js')
       const supabase = createClient(
         process.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co',
@@ -113,10 +113,7 @@ if (typeof window === 'undefined') {
         .from('navatar_data')
         .upsert({
           user_id: userId,
-          fruit,
-          color,
-          outfit,
-          powers,
+          responses,
           updated_at: new Date().toISOString()
         })
         .select()

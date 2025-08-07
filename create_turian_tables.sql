@@ -12,10 +12,7 @@ CREATE TABLE turian_chats (
 CREATE TABLE navatar_data (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-  fruit TEXT,
-  color TEXT,
-  outfit TEXT,
-  powers TEXT,
+  responses JSONB,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
