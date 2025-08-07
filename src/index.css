@@ -1,0 +1,28 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    font-family: 'Segoe UI', 'Comic Sans MS', cursive, sans-serif;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-nature-green hover:bg-green-600 text-white font-bold py-2 px-4 rounded-full transition-colors duration-200;
+  }
+  
+  .btn-secondary {
+    @apply bg-nature-blue hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-full transition-colors duration-200;
+  }
+  
+  .card {
+    @apply bg-white rounded-xl shadow-lg p-6 border-2 border-primary-100;
+  }
+  
+  .badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium;
+  }
+}

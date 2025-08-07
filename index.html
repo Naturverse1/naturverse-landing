@@ -1,122 +1,14 @@
+
 <!DOCTYPE html>
 <html lang="en">
-<head><link rel="icon" type="image/x-icon" href="favicon.ico">
-
+<head>
   <meta charset="UTF-8" />
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>The Naturverse</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(to bottom right, #e8f7ff, #ffffff);
-      text-align: center;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-
-    .logo {
-      width: 200px;
-      max-width: 80%;
-      margin-top: -50px;
-    }
-
-    h1 {
-      font-size: 2.5em;
-      margin: 0.5em 0 0.2em;
-      color: #2a2a2a;
-    }
-
-    p {
-      font-size: 1.2em;
-      color: #555;
-      margin: 0 0 2em;
-    }
-
-    .coming-soon-button {
-      background-color: #4caf50;
-      color: white;
-      padding: 0.8em 2em;
-      border: none;
-      border-radius: 25px;
-      font-size: 1em;
-      cursor: default;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
-
-    .test-supabase-button {
-      background-color: #4caf50;
-      color: white;
-      padding: 0.8em 2em;
-      border: none;
-      border-radius: 25px;
-      font-size: 1em;
-      cursor: pointer;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      margin-top: 1em;
-    }
-
-    @media (max-width: 600px) {
-      h1 {
-        font-size: 1.8em;
-      }
-      p {
-        font-size: 1em;
-      }
-    }
-  </style>
+  <title>The Naturverse™ - A Magical World of Learning</title>
 </head>
 <body>
-  <img src="logo.png" alt="Turian Media Logo" class="logo" />
-  <h1>🌍 Welcome to The Naturverse™</h1>
-  <p>A Magical World of Learning</p>
-  <button class="coming-soon-button">Coming Soon</button>
-  <button id="testButton" class="test-supabase-button">Test Supabase</button>
-
-  <div style="margin-top: 20px;">
-    <input type="text" id="globalSearch" placeholder="Search modules or quizzes" />
-    <button id="searchButton">Search</button>
-  </div>
-  <div id="searchResults" style="margin-top: 10px;"></div>
-
-  <div style="margin-top: 20px;">
-    <input type="email" id="auth-email" placeholder="Email" />
-    <input type="password" id="password" placeholder="Password" />
-    <button id="signupButton">Sign Up</button>
-    <button id="loginButton">Log In</button>
-    <button id="googleLoginButton">Sign in with Google</button>
-    <button id="logoutButton">Log Out</button>
-    <p id="authResult"></p>
-  </div>
-
-  <div id="result" style="margin-top: 20px;"></div>
-
-  <div id="email-form-container" style="margin-top: 20px;">
-    <form id="email-form">
-      <input type="text" id="name" placeholder="Full Name" />
-      <select id="age_group">
-        <option value="Child">Child</option>
-        <option value="Teen">Teen</option>
-        <option value="Parent">Parent</option>
-        <option value="Educator">Educator</option>
-      </select>
-      <input type="text" id="interest" placeholder="What are you most interested in?" />
-      <textarea id="message" placeholder="Anything else to share?"></textarea>
-      <label for="waitlist-email">Email:</label>
-      <input type="email" id="waitlist-email" placeholder="Enter your email" />
-      <button id="submitBtn" type="submit">Join Waitlist</button>
-    </form>
-    <div id="form-message"></div>
-  </div>
-  <div id="success-message" style="display: none; margin-top: 20px;">
-    <p>Thanks for signing up!</p>
-  </div>
-
-  <script type="module" src="index.js"></script>
-  <script type="module" src="./emailCapture.js"></script>
+  <div id="root"></div>
+  <script type="module" src="/src/main.jsx"></script>
 </body>
 </html>

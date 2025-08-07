@@ -20,7 +20,7 @@ localPort = 5000
 externalPort = 5000
 
 [workflows]
-runButton = "Static Server"
+runButton = "React Dev Server"
 
 [[workflows.workflow]]
 name = "Static Server"
@@ -30,3 +30,12 @@ mode = "sequential"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "npx serve . -p 5000"
+
+[[workflows.workflow]]
+name = "React Dev Server"
+author = 46050130
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run dev"
