@@ -36,6 +36,7 @@ import LearningTrack from './pages/LearningTrack.jsx';
 import TurianVoiceChat from './components/TurianChat/TurianVoiceChat.jsx';
 import ParentDashboard from './components/Parents/ParentDashboard.jsx';
 import NatureFit from './components/NatureFit/NatureFit.jsx';
+import MusicZone from './components/MusicZone/MusicZone.jsx';
 
 function AppContent() {
   const { user } = useAuth()
@@ -99,6 +100,7 @@ function AppContent() {
             <Route path="/talk" element={<TurianVoiceChat />} />
             <Route path="/parents" element={<ParentDashboard />} />
             <Route path="/naturefit" element={<NatureFit />} />
+            <Route path="/musiczone" element={<MusicZone />} />
           </Routes>
 
           {/* Global Inventory Drawer */}

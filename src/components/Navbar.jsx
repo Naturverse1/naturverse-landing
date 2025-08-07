@@ -87,6 +87,9 @@ const Navbar = () => {
             <Link to="/naturefit" className="nav-link">
               🌿 NatureFit™
             </Link>
+            <Link to="/musiczone" className="nav-link">
+              🎤 MusicZone™
+            </Link>
             {user && (
               <button
                 onClick={handleSignOut}
@@ -220,6 +223,14 @@ const Navbar = () => {
               >
                 <User size={20} />
                 <span>NatureFit™</span>
+              </Link>
+              <Link
+                to="/musiczone"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center space-x-2 text-gray-700 hover:text-nature-green transition-colors"
+              >
+                <User size={20} />
+                <span>MusicZone™</span>
               </Link>
               <button
                 onClick={handleSignOut}
