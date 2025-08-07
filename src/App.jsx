@@ -17,6 +17,9 @@ import Marketplace from './pages/Marketplace'
 import MarketplaceAdmin from './pages/MarketplaceAdmin'
 import MyInventory from './pages/MyInventory'
 import AdminPanel from './pages/AdminPanel'
+import Library from './routes/Library'
+import Guardian from './routes/Guardian'
+import Events from './routes/Events'
 
 function App() {
   return (
@@ -41,6 +44,9 @@ function App() {
                 <Route path="/marketplace-admin" element={<MarketplaceAdmin />} />
                 <Route path="/admin-panel" element={<AdminPanel />} />
                 <Route path="/admin/analytics" element={<AdminPanel />} />
+                <Route path="/library" element={<Library />} />
+                <Route path="/guardian" element={<Guardian />} />
+                <Route path="/events" element={<Events />} />
               </Routes>
             </main>
             <TurianAI />
