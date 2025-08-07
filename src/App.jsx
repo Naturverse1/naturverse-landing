@@ -33,6 +33,8 @@ import SelfieBooth from './components/SelfieCam/SelfieBooth'
 import Trading from './pages/Trading.jsx';
 import StoryMode from './components/StoryMode/StoryMode.jsx';
 import LearningTrack from './pages/LearningTrack.jsx';
+import TurianVoiceChat from './components/TurianChat/TurianVoiceChat.jsx';
+import ParentDashboard from './components/Parents/ParentDashboard.jsx';
 
 function AppContent() {
   const { user } = useAuth()
@@ -93,6 +95,8 @@ function AppContent() {
             <Route path="/trading" element={<Trading />} />
             <Route path="/storymode" element={<StoryMode />} />
             <Route path="/learn" element={<LearningTrack />} />
+            <Route path="/talk" element={<TurianVoiceChat />} />
+            <Route path="/parents" element={<ParentDashboard />} />
           </Routes>
 
           {/* Global Inventory Drawer */}

@@ -75,8 +75,14 @@ const Navbar = () => {
             <Link to="/trading" className="nav-link">
               🔄 Trading
             </Link>
-            <Link to="/story" className="nav-link">
+            <Link to="/storymode" className="nav-link">
               📚 Story Mode
+            </Link>
+            <Link to="/talk" className="nav-link">
+              🎤 Talk to Turian
+            </Link>
+            <Link to="/parents" className="nav-link">
+              🛡️ Parent Dashboard
             </Link>
             {user && (
               <button
@@ -181,12 +187,28 @@ const Navbar = () => {
                 <span>Trading</span>
               </Link>
               <Link
-                to="/story"
+                to="/storymode"
                 onClick={() => setIsOpen(false)}
                 className="flex items-center space-x-2 text-gray-700 hover:text-nature-green transition-colors"
               >
                 <User size={20} />
                 <span>Story Mode</span>
+              </Link>
+              <Link
+                to="/talk"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center space-x-2 text-gray-700 hover:text-nature-green transition-colors"
+              >
+                <User size={20} />
+                <span>Talk to Turian</span>
+              </Link>
+              <Link
+                to="/parents"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center space-x-2 text-gray-700 hover:text-nature-green transition-colors"
+              >
+                <User size={20} />
+                <span>Parent Dashboard</span>
               </Link>
               <button
                 onClick={handleSignOut}
