@@ -1,0 +1,142 @@
+# 1. Create BattleArena component
+mkdir src/pages/Arena
+
+echo "import React, { useEffect, useState } from 'react';
+import { supabase } from '../../supabaseClient';
+
+export default function BattleArena() {
+  const [players, setPlayers] = useState([]);
+  const [question, setQuestion] = useState(null);
+  const [answer, setAnswer] = useState('');
+  const [message, setMessage] = useState('');
+  const [score, setScore] = useState(0);
+  const [arenaChannel, setArenaChannel] = useState(null);
+
+  useEffect(() => {
+    const channel = supabase.channel('battle-arena');
+    setArenaChannel(channel);
+
+    channel.on('broadcast', { event: 'new-question' }, payload => {
+      setQuestion(payload.payload);
+      setMessage('');
+      setAnswer('');
+    });
+
+    channel.on('broadcast', { event: 'score-update' }, payload => {
+      setPlayers(payload.payload);
+    });
+
+    channel.subscribe();
+
+    return () => channel.unsubscribe();
+  }, []);
+
+  async function submitAnswer() {
+    if (!question || !answer) return;
+
+    const correct = answer.toLowerCase() === question.answer.toLowerCase();
+    if (correct) {
+      const newScore = score + 10;
+      setScore(newScore);
+      arenaChannel.send({ type: 'broadcast', event: 'score-update', payload: [...players, { name: 'You', score: newScore }] });
+      setMessage('✅ Correct! +10');
+    } else {
+      setMessage('❌ Oops, try again!');
+    }
+  }
+
+  return (
+    <div className='p-4 max-w-md mx-auto'>
+      <h1 className='text-xl font-bold mb-4'>⚔️ Naturverse Quiz Battle Arena</h1>
+      {question ? (
+        <>
+          <p className='font-bold mb-2'>{question.text}</p>
+          <input value={answer} onChange={e => setAnswer(e.target.value)} className='border p-2 mb-2 w-full' placeholder='Your answer...' />
+          <button onClick={submitAnswer} className='bg-green-600 text-white px-4 py-2 rounded w-full'>Submit</button>
+          <p className='mt-2 text-center'>{message}</p>
+        </>
+      ) : (
+        <p>⏳ Waiting for next question...</p>
+      )}
+
+      <div className='mt-6'>
+        <h2 className='font-bold'>Leaderboard</h2>
+        <ul>
+          {players.map((p, i) => <li key={i}>{p.name}: {p.score} pts</li>)}
+        </ul>
+      </div>
+    </div>
+  );
+}" > src/pages/Arena/BattleArena.jsx
+
+# 2. Create route in App.jsx
+sed -i '/StudentDashboard/a\
+import BattleArena from "./pages/Arena/BattleArena";' src/App.jsx
+sed -i '/<Route path="\/student"/a\
+  <Route path="/arena" element={<BattleArena />} />' src/App.jsx
+
+# 3. Add server-side question broadcaster (admin use)
+echo "import express from 'express';
+const router = express.Router();
+import { createClient } from '@supabase/supabase-js';
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+
+router.post('/api/broadcast-question', async (req, res) => {
+  const { text, answer } = req.body;
+  const result = await supabase.channel('battle-arena')
+    .send({ type: 'broadcast', event: 'new-question', payload: { text, answer } });
+  res.json({ status: 'sent', result });
+});
+
+export default router;" > server/broadcast-question.js
+
+sed -i "/app.use(express.json());/a\
+import questionRoute from './server/broadcast-question.js';\napp.use(questionRoute);" index.js
+
+# 4. Add broadcaster form in Admin Panel
+sed -i '/AdminDashboard/a\
+import QuestionBroadcaster from "../components/Admin/QuestionBroadcaster";' src/pages/Admin/Dashboard.jsx
+
+mkdir -p src/components/Admin
+echo "import React, { useState } from 'react';
+
+export default function QuestionBroadcaster() {
+  const [text, setText] = useState('');
+  const [answer, setAnswer] = useState('');
+  const [status, setStatus] = useState('');
+
+  async function sendQuestion() {
+    const res = await fetch('/api/broadcast-question', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, answer })
+    });
+    const data = await res.json();
+    setStatus('✅ Sent!');
+  }
+
+  return (
+    <div className='border p-4 mt-6'>
+      <h2 className='font-bold mb-2'>🎤 Broadcast New Question</h2>
+      <input className='border p-1 w-full mb-2' placeholder='Question' value={text} onChange={e => setText(e.target.value)} />
+      <input className='border p-1 w-full mb-2' placeholder='Correct Answer' value={answer} onChange={e => setAnswer(e.target.value)} />
+      <button onClick={sendQuestion} className='bg-purple-600 text-white px-4 py-1 rounded'>Send</button>
+      <p className='mt-2'>{status}</p>
+    </div>
+  );
+}" > src/components/Admin/QuestionBroadcaster.jsx
+
+sed -i '/Admin! Monitor the system and issue challenges./a\
+<QuestionBroadcaster />' src/pages/Admin/Dashboard.jsx
+
+# 5. Final confirmation
+echo "🎮 MONSTER 12 COMPLETE!
+
+✅ Live multiplayer quiz arena
+✅ Realtime Supabase channel setup
+✅ Admin broadcaster built-in
+✅ Leaderboard per battle
+✅ All integrated with existing frontend
+
+🚀 NEXT UP: MONSTER 13 — NFT BADGE MINTING + PROFILE UPGRADES
+Type '13' when ready." > DONE_BATTLE_ARENA.txt
