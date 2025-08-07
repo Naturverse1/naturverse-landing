@@ -10,6 +10,7 @@ import Learning from './pages/Learning'
 import Quizzes from './pages/Quizzes'
 import Profile from './pages/Profile'
 import Admin from './pages/Admin'
+import AdminDashboard from './pages/AdminDashboard'
 import AvatarCreator from './pages/AvatarCreator'
 
 function App() {
@@ -27,6 +28,7 @@ function App() {
               <Route path="/profile" element={<Profile />} />
               <Route path="/avatar" element={<AvatarCreator />} />
               <Route path="/admin" element={<Admin />} />
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
             </Routes>
           </main>
           <TurianAI />

@@ -182,6 +182,302 @@ if (typeof window === 'undefined') {
       })
     }
   })
+
+  // Daily Quest Route
+  app.get('/api/daily-quest/:userId', async (req, res) => {
+    try {
+      const { userId } = req.params
+      const { createClient } = require('@supabase/supabase-js')
+      const supabase = createClient(
+        process.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co',
+        process.env.VITE_SUPABASE_ANON_KEY || 'placeholder'
+      )
+      
+      const today = new Date().toISOString().split('T')[0]
+      
+      // Check if user already has a quest for today
+      let { data: existingQuest, error } = await supabase
+        .from('daily_quests')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('date', today)
+        .single()
+      
+      if (existingQuest) {
+        return res.json({ quest: existingQuest })
+      }
+      
+      // Generate new quest with OpenAI
+      const regions = ['Enchanted Forest', 'Ocean Depths', 'Sky Mountains', 'Golden Desert']
+      const selectedRegion = regions[Math.floor(Math.random() * regions.length)]
+      
+      const questPrompt = `Generate a fun, educational daily quest for kids in The Naturverse™ ${selectedRegion} region. Make it interactive, nature-focused, and achievable in 10-15 minutes. Include specific tasks and learning objectives.`
+      
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4",
+        messages: [{ role: "user", content: questPrompt }],
+        max_tokens: 200
+      })
+      
+      const questText = completion.choices[0].message.content
+      
+      // Save new quest
+      const { data: newQuest, error: insertError } = await supabase
+        .from('daily_quests')
+        .insert({
+          user_id: userId,
+          date: today,
+          region: selectedRegion,
+          quest_text: questText,
+          completed: false
+        })
+        .select()
+        .single()
+      
+      if (insertError) throw insertError
+      
+      res.json({ quest: newQuest })
+    } catch (error) {
+      console.error('Daily quest error:', error)
+      res.status(500).json({ message: 'Failed to generate daily quest' })
+    }
+  })
+
+  // Complete Daily Quest Route
+  app.post('/api/daily-quest/complete', async (req, res) => {
+    try {
+      const { userId, questId } = req.body
+      const { createClient } = require('@supabase/supabase-js')
+      const supabase = createClient(
+        process.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co',
+        process.env.VITE_SUPABASE_ANON_KEY || 'placeholder'
+      )
+      
+      // Mark quest as completed
+      const { error: updateError } = await supabase
+        .from('daily_quests')
+        .update({ completed: true })
+        .eq('id', questId)
+        .eq('user_id', userId)
+      
+      if (updateError) throw updateError
+      
+      // Award $NATUR tokens
+      const rewardAmount = Math.floor(Math.random() * 50) + 25 // 25-75 tokens
+      const { error: rewardError } = await supabase
+        .from('natur_rewards')
+        .insert({
+          user_id: userId,
+          type: 'daily_quest',
+          amount: rewardAmount,
+          description: 'Daily quest completion reward'
+        })
+      
+      if (rewardError) throw rewardError
+      
+      res.json({ 
+        success: true, 
+        message: `Dee mak! Quest completed! You earned ${rewardAmount} $NATUR tokens!`,
+        reward: rewardAmount 
+      })
+    } catch (error) {
+      console.error('Complete quest error:', error)
+      res.status(500).json({ message: 'Failed to complete quest' })
+    }
+  })
+
+  // Generate Quiz Route
+  app.post('/api/generate-quiz', async (req, res) => {
+    try {
+      const { topic, difficulty = 'medium', userId, language = 'en' } = req.body
+      
+      if (!process.env.OPENAI_API_KEY) {
+        return res.status(500).json({ message: 'OpenAI API key not configured' })
+      }
+      
+      const quizPrompt = language === 'th' 
+        ? `สร้างแบบทดสอบ 5 ข้อเกี่ยวกับ "${topic}" สำหรับเด็ก ระดับความยาก: ${difficulty}. ตอบกลับเป็น JSON format: {"questions": [{"question": "คำถาม", "options": ["ตัวเลือก A", "ตัวเลือก B", "ตัวเลือก C", "ตัวเลือก D"], "correct": 0}]}`
+        : `Create a 5-question multiple choice quiz about "${topic}" for kids, difficulty: ${difficulty}. Respond in JSON format: {"questions": [{"question": "Question text", "options": ["Option A", "Option B", "Option C", "Option D"], "correct": 0}]}`
+      
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4",
+        messages: [{ role: "user", content: quizPrompt }],
+        max_tokens: 800
+      })
+      
+      const quizData = JSON.parse(completion.choices[0].message.content)
+      
+      res.json({ quiz: quizData })
+    } catch (error) {
+      console.error('Quiz generation error:', error)
+      res.status(500).json({ message: 'Failed to generate quiz' })
+    }
+  })
+
+  // Submit Quiz Route
+  app.post('/api/submit-quiz', async (req, res) => {
+    try {
+      const { userId, quizData, userAnswers, topic } = req.body
+      const { createClient } = require('@supabase/supabase-js')
+      const supabase = createClient(
+        process.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co',
+        process.env.VITE_SUPABASE_ANON_KEY || 'placeholder'
+      )
+      
+      // Calculate score
+      let correctAnswers = 0
+      quizData.questions.forEach((question, index) => {
+        if (userAnswers[index] === question.correct) {
+          correctAnswers++
+        }
+      })
+      
+      const score = Math.round((correctAnswers / quizData.questions.length) * 100)
+      
+      // Save quiz result
+      const { data: quizResult, error: saveError } = await supabase
+        .from('quiz_results')
+        .insert({
+          user_id: userId,
+          quiz_data: quizData,
+          user_answers: userAnswers,
+          score,
+          total_questions: quizData.questions.length,
+          topic
+        })
+        .select()
+        .single()
+      
+      if (saveError) throw saveError
+      
+      // Award $NATUR tokens based on score
+      const rewardAmount = Math.floor(score / 10) * 5 // 5 tokens per 10% score
+      if (rewardAmount > 0) {
+        await supabase
+          .from('natur_rewards')
+          .insert({
+            user_id: userId,
+            type: 'quiz',
+            amount: rewardAmount,
+            description: `Quiz completion: ${score}% on ${topic}`
+          })
+      }
+      
+      // Generate Navatar suggestion if score > 70%
+      if (score > 70) {
+        const suggestionPrompt = `Based on a ${score}% quiz score about ${topic}, suggest a fun upgrade or change to the user's magical Navatar character. Be creative and nature-themed!`
+        
+        try {
+          const suggestion = await openai.chat.completions.create({
+            model: "gpt-4",
+            messages: [{ role: "user", content: suggestionPrompt }],
+            max_tokens: 100
+          })
+          
+          await supabase
+            .from('navatar_suggestions')
+            .insert({
+              user_id: userId,
+              suggestion_text: suggestion.choices[0].message.content,
+              based_on: 'quiz',
+              activity_id: quizResult.id
+            })
+        } catch (suggestionError) {
+          console.error('Suggestion error:', suggestionError)
+        }
+      }
+      
+      res.json({ 
+        success: true, 
+        score, 
+        correctAnswers,
+        totalQuestions: quizData.questions.length,
+        reward: rewardAmount,
+        message: score > 70 ? 'Dee mak! Excellent work!' : 'Good effort! Keep learning!'
+      })
+    } catch (error) {
+      console.error('Submit quiz error:', error)
+      res.status(500).json({ message: 'Failed to submit quiz' })
+    }
+  })
+
+  // Get User Stats Route
+  app.get('/api/user-stats/:userId', async (req, res) => {
+    try {
+      const { userId } = req.params
+      const { createClient } = require('@supabase/supabase-js')
+      const supabase = createClient(
+        process.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co',
+        process.env.VITE_SUPABASE_ANON_KEY || 'placeholder'
+      )
+      
+      // Get total NATUR rewards
+      const { data: rewards } = await supabase
+        .from('natur_rewards')
+        .select('amount')
+        .eq('user_id', userId)
+      
+      const totalNatur = rewards?.reduce((sum, reward) => sum + reward.amount, 0) || 0
+      
+      // Get completed quests count
+      const { data: quests } = await supabase
+        .from('daily_quests')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('completed', true)
+      
+      // Get quiz stats
+      const { data: quizStats } = await supabase
+        .from('quiz_results')
+        .select('score')
+        .eq('user_id', userId)
+      
+      const avgScore = quizStats?.length > 0 
+        ? Math.round(quizStats.reduce((sum, quiz) => sum + quiz.score, 0) / quizStats.length)
+        : 0
+      
+      res.json({
+        totalNatur,
+        completedQuests: quests?.length || 0,
+        totalQuizzes: quizStats?.length || 0,
+        averageScore: avgScore
+      })
+    } catch (error) {
+      console.error('User stats error:', error)
+      res.status(500).json({ message: 'Failed to fetch user stats' })
+    }
+  })
+
+  // Admin Stats Route
+  app.get('/api/admin/stats', async (req, res) => {
+    try {
+      const { createClient } = require('@supabase/supabase-js')
+      const supabase = createClient(
+        process.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co',
+        process.env.VITE_SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY || 'placeholder'
+      )
+      
+      // Get admin stats
+      const { data: stats, error } = await supabase
+        .from('admin_stats')
+        .select('*')
+        .single()
+      
+      if (error) throw error
+      
+      // Get top scorers
+      const { data: topScorers } = await supabase
+        .from('quiz_results')
+        .select('user_id, score, created_at')
+        .order('score', { ascending: false })
+        .limit(10)
+      
+      res.json({ ...stats, topScorers })
+    } catch (error) {
+      console.error('Admin stats error:', error)
+      res.status(500).json({ message: 'Failed to fetch admin stats' })
+    }
+  })
   
   const PORT = process.env.PORT || 3001
   app.listen(PORT, '0.0.0.0', () => {
