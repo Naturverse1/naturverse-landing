@@ -1,0 +1,183 @@
+# 🧙 MONSTER 17 + LIVE VOTING + NATURVERSITY
+
+# Setup folders
+mkdir -p src/components/Naturversity src/components/StoryMode
+
+# --- Create LearningTrack.jsx ---
+cat << 'EOF' > src/components/Naturversity/LearningTrack.jsx
+import { useEffect, useState } from 'react';
+import { createClient } from '@supabase/supabase-js';
+const supabase = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY);
+
+const tracks = [
+  { id: 'storytelling', label: '📖 Storytelling' },
+  { id: 'nature', label: '🌱 Nature' },
+  { id: 'music', label: '🎵 Music' },
+  { id: 'math', label: '🔢 Math' },
+  { id: 'language', label: '🗣️ Language' },
+  { id: 'movement', label: '🏃 Movement' }
+];
+
+const LearningTrack = ({ user }) => {
+  const [selectedTrack, setSelectedTrack] = useState('');
+
+  useEffect(() => {
+    const fetchTrack = async () => {
+      const { data } = await supabase.from('users').select('learning_track').eq('id', user.id).single();
+      if (data) setSelectedTrack(data.learning_track);
+    };
+    fetchTrack();
+  }, []);
+
+  const selectTrack = async (trackId) => {
+    setSelectedTrack(trackId);
+    await supabase.from('users').update({ learning_track: trackId }).eq('id', user.id);
+  };
+
+  return (
+    <div className="p-4 max-w-xl mx-auto">
+      <h1 className="text-2xl font-bold mb-4">🎓 Choose Your Learning Track</h1>
+      <div className="grid grid-cols-2 gap-4">
+        {tracks.map(track => (
+          <button
+            key={track.id}
+            onClick={() => selectTrack(track.id)}
+            className={`p-4 rounded shadow ${selectedTrack === track.id ? 'bg-green-300' : 'bg-white'}`}
+          >
+            {track.label}
+          </button>
+        ))}
+      </div>
+      {selectedTrack && (
+        <div className="mt-6 text-lg">
+          You chose: <strong>{tracks.find(t => t.id === selectedTrack)?.label}</strong><br/>
+          Turian will prepare quests for you!
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default LearningTrack;
+EOF
+
+# --- Update App.jsx with new route ---
+sed -i '/import { BrowserRouter as Router, Route, Routes } from "react-router-dom";/a import LearningTrack from "./components/Naturversity/LearningTrack.jsx";' src/App.jsx
+sed -i '/<Routes>/a <Route path="/learn" element={<LearningTrack user={user} />} />' src/App.jsx
+
+# --- Upgrade StoryMode.jsx with live voting ---
+cat << 'EOF' > src/components/StoryMode/StoryMode.jsx
+import { useEffect, useState } from 'react';
+import { useSpeechSynthesis } from 'react-speech-kit';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY);
+const channel = supabase.channel('story-votes');
+
+const StoryMode = ({ user }) => {
+  const { speak, voices } = useSpeechSynthesis();
+  const [storyLog, setStoryLog] = useState([]);
+  const [currentPart, setCurrentPart] = useState('');
+  const [voteOptions, setVoteOptions] = useState([]);
+  const [votes, setVotes] = useState({});
+  const [loading, setLoading] = useState(false);
+
+  const region = 'Thailandia';
+
+  const getNextStoryPart = async (choice) => {
+    setLoading(true);
+    const systemPrompt = `
+Narrate a fantasy story for children set in ${region}. Use simple words and end with 3 choices like:
+1. Do this...
+2. Do that...
+3. Try something else...
+Use Turian's personality: kind, curious, fun, and says "Dee mak!"`;
+
+    const res = await fetch('/api/turian', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: choice || 'Start our story in Thailandia!' }
+        ]
+      })
+    });
+
+    const data = await res.json();
+    const reply = data.response;
+
+    setStoryLog((prev) => [...prev, { text: reply, choice }]);
+    setCurrentPart(reply);
+    setLoading(false);
+
+    const options = reply.match(/1\..*|2\..*|3\..*/g) || [];
+    setVoteOptions(options);
+    setVotes({});
+    speak({ text: reply, voice: voices.find(v => v.lang.includes('en')) });
+
+    channel.send({ type: 'broadcast', event: 'new_choices', payload: { options } });
+  };
+
+  useEffect(() => {
+    getNextStoryPart();
+
+    channel.on('broadcast', { event: 'vote' }, ({ payload }) => {
+      setVotes(prev => ({ ...prev, [payload.user]: payload.choice }));
+    });
+
+    channel.on('broadcast', { event: 'new_choices' }, ({ payload }) => {
+      setVoteOptions(payload.options);
+      setVotes({});
+    });
+
+    channel.subscribe();
+  }, []);
+
+  const tallyVotes = () => {
+    const counts = {};
+    Object.values(votes).forEach(choice => counts[choice] = (counts[choice] || 0) + 1);
+    const top = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
+    if (top) getNextStoryPart(top[0]);
+  };
+
+  return (
+    <div className="p-4 max-w-3xl mx-auto">
+      <h1 className="text-3xl font-bold mb-4">📖 Group Story Mode</h1>
+      <div className="bg-white shadow rounded p-4 mb-4 space-y-2">
+        {storyLog.map((entry, i) => (
+          <div key={i}>
+            {entry.choice && <p className="text-sm italic text-gray-500">👥 Voted: {entry.choice}</p>}
+            <p>{entry.text}</p>
+          </div>
+        ))}
+      </div>
+      {voteOptions.length > 0 && (
+        <>
+          <h2 className="font-semibold mb-2">🗳️ Vote on the next action!</h2>
+          {voteOptions.map((opt, i) => (
+            <button
+              key={i}
+              onClick={() =>
+                channel.send({ type: 'broadcast', event: 'vote', payload: { user: user.id, choice: opt } })
+              }
+              className="block w-full bg-green-100 hover:bg-green-200 p-2 rounded text-left mb-1"
+            >
+              {opt}
+            </button>
+          ))}
+          <button onClick={tallyVotes} className="mt-4 bg-purple-500 text-white p-2 rounded">
+            ✅ Finalize Votes & Continue
+          </button>
+        </>
+      )}
+    </div>
+  );
+};
+
+export default StoryMode;
+EOF
+
+# ✅ Complete!
+echo "✅ Naturversity Track Selection added at /learn"
+echo "✅ Group Story Mode with LIVE VOTING available at /story"
