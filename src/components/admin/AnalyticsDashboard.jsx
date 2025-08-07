@@ -13,20 +13,20 @@ export default function AnalyticsDashboard() {
       try {
         setLoading(true);
         
-        // Fetch data from various tables
+        // Fetch data from various tables with error handling
         const [
           { data: users, error: usersError },
           { data: quizzes, error: quizzesError },
           { data: purchases, error: purchasesError },
           { data: rewards, error: rewardsError }
         ] = await Promise.all([
-          supabase.from('auth.users').select('*'),
+          supabase.from('users').select('*'),
           supabase.from('quiz_results').select('*'),
           supabase.from('user_purchases').select('*'),
           supabase.from('natur_rewards').select('*')
         ]);
 
-        // Handle potential errors
+        // Handle potential errors and null data
         const userData = users || [];
         const quizData = quizzes || [];
         const purchaseData = purchases || [];
@@ -36,7 +36,7 @@ export default function AnalyticsDashboard() {
         const last7Days = Array.from({ length: 7 }, (_, i) => {
           const date = dayjs().subtract(i, 'day').format('YYYY-MM-DD');
           return {
-            date,
+            date: dayjs().subtract(i, 'day').format('MMM DD'),
             users: userData.filter(u => dayjs(u.created_at).format('YYYY-MM-DD') === date).length,
             quizzes: quizData.filter(q => dayjs(q.created_at).format('YYYY-MM-DD') === date).length,
             purchases: purchaseData.filter(p => dayjs(p.purchase_date).format('YYYY-MM-DD') === date).length
@@ -68,7 +68,7 @@ export default function AnalyticsDashboard() {
   if (loading) {
     return (
       <div className="p-6 text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-nature-green mx-auto mb-4"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
         <p className="text-gray-600">Loading analytics...</p>
       </div>
     );

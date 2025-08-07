@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, Fragment } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Tab } from '@headlessui/react'
@@ -11,7 +10,7 @@ import {
   FiShoppingBag, 
   FiAward, 
   FiSettings,
-  FiBarChart3,
+  FiBarChart,
   FiPlus,
   FiEdit,
   FiTrash2,
@@ -41,13 +40,13 @@ export default function AdminPanel() {
     image_url: '',
     rarity: 'common'
   })
-  
+
   const { user } = useAuth()
   const navigate = useNavigate()
 
   const tabCategories = [
-    { name: 'Dashboard', icon: FiBarChart3 },
-    { name: 'Analytics', icon: FiBarChart3 },
+    { name: 'Dashboard', icon: FiBarChart },
+    { name: 'Analytics', icon: FiBarChart },
     { name: 'Users', icon: FiUsers },
     { name: 'Marketplace', icon: FiShoppingBag },
     { name: 'Learning', icon: FiPackage },
@@ -60,7 +59,7 @@ export default function AdminPanel() {
       navigate('/')
       return
     }
-    
+
     loadAdminData()
   }, [user, navigate])
 
@@ -115,7 +114,7 @@ export default function AdminPanel() {
         })
 
       if (error) throw error
-      
+
       setShowAddForm(false)
       setFormData({
         name: '',
@@ -135,7 +134,7 @@ export default function AdminPanel() {
 
   const handleDeleteItem = async (id) => {
     if (!confirm('Are you sure you want to delete this item?')) return
-    
+
     try {
       const { error } = await supabase
         .from('market_items')
@@ -143,7 +142,7 @@ export default function AdminPanel() {
         .eq('id', id)
 
       if (error) throw error
-      
+
       loadAdminData()
       alert('Item deleted successfully!')
     } catch (error) {
@@ -160,19 +159,19 @@ export default function AdminPanel() {
           <div className="text-2xl font-bold">{stats.total_users || 0}</div>
           <div className="text-sm opacity-90">Total Users</div>
         </div>
-        
+
         <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-lg p-6 text-white">
           <FiAward className="h-8 w-8 mb-2" />
           <div className="text-2xl font-bold">{stats.completed_quests || 0}</div>
           <div className="text-sm opacity-90">Completed Quests</div>
         </div>
-        
+
         <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg p-6 text-white">
           <FiPackage className="h-8 w-8 mb-2" />
           <div className="text-2xl font-bold">{stats.total_quizzes || 0}</div>
           <div className="text-sm opacity-90">Total Quizzes</div>
         </div>
-        
+
         <div className="bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-lg p-6 text-white">
           <FiShoppingBag className="h-8 w-8 mb-2" />
           <div className="text-2xl font-bold">{items.length}</div>
@@ -355,7 +354,7 @@ export default function AdminPanel() {
               </Tab>
             ))}
           </Tab.List>
-          
+
           <Tab.Panels>
             {tabCategories.map((_, index) => (
               <Tab.Panel key={index} className="rounded-xl bg-white/10 p-3">
