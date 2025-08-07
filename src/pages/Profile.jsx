@@ -180,21 +180,23 @@ const Profile = () => {
       </div>
 
         {/* NFT Badges Section */}
-        <div className="card mt-8">
-          <h2 className="text-2xl font-bold text-nature-green mb-4">
-            🏅 Your NFT Badges
-          </h2>
-          <BadgeDisplay userId={user?.id} />
-        </div>
+      <div className="card">
+        <h2 className="text-2xl font-bold text-nature-green mb-4">
+          🏅 Your NFT Badges
+        </h2>
+        <BadgeDisplay userId={user?.id} />
+      </div>
 
-        {/* Inventory Section */}
-        <div className="card mt-8">
-          <h2 className="text-lg font-bold mt-6 mb-2">🎒 Your Inventory</h2>
-          <InventoryDisplay userId={user?.id} />
+      {/* Inventory Section */}
+      <div className="card">
+        <h2 className="text-lg font-bold mb-2">🎒 Your Inventory</h2>
+        <InventoryDisplay userId={user?.id} />
+      </div>
 
-          <h2 className="text-lg font-bold mt-6 mb-2">🌍 Multiplayer Lobbies</h2>
-          <LobbyList userId={user?.id} />
-        </div>
+      {/* Multiplayer Section */}
+      <div className="card">
+        <h2 className="text-lg font-bold mb-2">🌍 Multiplayer Lobbies</h2>
+        <LobbyList userId={user?.id} />
       </div>
     </div>
   );
