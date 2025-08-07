@@ -1,0 +1,33 @@
+# MONSTER 24: Turian Codex – AI Encyclopedia
+mkdir src/components/Codex src/data && \
+echo "export const codexData = [
+  { id: 1, name: 'Turian the Durian', type: 'character', region: 'Golden Grove', description: 'The magical turtle-durian guardian. Catchphrase: Dee mak!' },
+  { id: 2, name: 'Jay-Sing', type: 'character', region: 'Royal Canopy', description: 'The lion prince of Udoni, brave and noble.' },
+  { id: 3, name: 'Lotus Lake', type: 'region', description: 'Peaceful water kingdom home to Non Bua and Coconut Cruze.' }
+];" > src/data/codexData.js && \
+curl -s https://raw.githubusercontent.com/naturverse/assets/main/components/Codex/Codex.jsx > src/components/Codex/Codex.jsx && \
+
+# MONSTER 25: Story Portal Generator
+mkdir src/components/StoryPortal && \
+curl -s https://raw.githubusercontent.com/naturverse/assets/main/components/StoryPortal/StoryPortal.jsx > src/components/StoryPortal/StoryPortal.jsx && \
+echo "const storyPaths = [
+  { id: 'a', title: 'Forest of Echoes', intro: 'A whisper calls you from the trees…' },
+  { id: 'b', title: 'Cave of Time', intro: 'A glowing clock beckons from below…' },
+  { id: 'c', title: 'Sky Island', intro: 'Floating rocks shimmer in the clouds…' }
+]; export default storyPaths;" > src/data/storyPaths.js && \
+
+# MONSTER 26: Player Hubs + Emote Chat
+mkdir src/components/PlayerHub && \
+curl -s https://raw.githubusercontent.com/naturverse/assets/main/components/PlayerHub/PlayerHub.jsx > src/components/PlayerHub/PlayerHub.jsx && \
+echo "export const emotes = ['👋', '🎉', '😄', '🥺', '🙌', '🔥', '🍍', '🐢'];" > src/data/emotes.js && \
+
+# ROUTES + UI + ASSETS
+sed -i '/React Router/i import Codex from "./components/Codex/Codex";\nimport StoryPortal from "./components/StoryPortal/StoryPortal";\nimport PlayerHub from "./components/PlayerHub/PlayerHub";' src/App.jsx && \
+sed -i '/<Routes>/a <Route path=\"/codex\" element={<Codex />} />\n<Route path=\"/story\" element={<StoryPortal />} />\n<Route path=\"/hub\" element={<PlayerHub />} />' src/App.jsx && \
+
+# ASSETS + SPEECH SUPPORT
+npm install i18next react-i18next uuid && \
+echo "window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;" >> src/main.jsx && \
+
+echo '✅ Triple Combo Deployed: Turian Codex, Story Portal, and Player Hubs now live!' && \
+echo '🧠 /codex | 🛸 /story | 🧑‍🤝‍🧑 /hub'
