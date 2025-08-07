@@ -1,0 +1,134 @@
+# 1. Create AI Lesson Builder component
+mkdir src/components/Lessons
+
+echo "import React, { useState } from 'react';
+import { supabase } from '../../supabaseClient';
+
+export default function AILessonBuilder() {
+  const [topic, setTopic] = useState('');
+  const [lesson, setLesson] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  async function generateLesson() {
+    setLoading(true);
+    const res = await fetch('/api/ai-lesson', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ topic })
+    });
+    const data = await res.json();
+    setLesson(data);
+    // Save to Supabase
+    await supabase.from('learning_modules').insert([{
+      title: data.title,
+      description: data.summary,
+      content_type: 'storybook',
+      region: 'Thailandia',
+      age_group: '6-10',
+      media_urls: JSON.stringify(data.assets),
+    }]);
+    setLoading(false);
+  }
+
+  return (
+    <div className='p-4'>
+      <h2 className='text-xl font-bold mb-2'>🧠 AI Lesson Builder</h2>
+      <input className='border p-2 mr-2' placeholder='Enter topic (e.g. Water Cycle)' value={topic} onChange={e => setTopic(e.target.value)} />
+      <button onClick={generateLesson} className='bg-green-600 text-white px-3 py-1 rounded'>Generate</button>
+      {loading && <p>Loading AI magic...</p>}
+      {lesson && <div className='mt-4 border p-3 bg-white rounded shadow'>
+        <h3 className='font-bold text-lg'>{lesson.title}</h3>
+        <p>{lesson.summary}</p>
+      </div>}
+    </div>
+  );
+}" > src/components/Lessons/AILessonBuilder.jsx
+
+# 2. Add API route to generate lesson
+mkdir server
+echo "import express from 'express';
+import { OpenAI } from 'openai';
+const router = express.Router();
+const openai = new OpenAI();
+
+router.post('/api/ai-lesson', async (req, res) => {
+  const { topic } = req.body;
+  const prompt = \`Create a simple children's lesson on \${topic}. Include: title, summary, 3 fun facts, a quiz question, and suggested images or video ideas.\`;
+  try {
+    const chat = await openai.chat.completions.create({
+      model: 'gpt-4',
+      messages: [{ role: 'system', content: 'You are an educational lesson creator for kids aged 6–10.' }, { role: 'user', content: prompt }],
+    });
+    const reply = chat.choices[0].message.content;
+    const formatted = {
+      title: topic.charAt(0).toUpperCase() + topic.slice(1),
+      summary: reply,
+      assets: ['https://image.pollinations.ai/prompt/' + encodeURIComponent(topic)],
+    };
+    res.json(formatted);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+export default router;" > server/ai-lesson.js
+
+# 3. Connect new route in index.js
+sed -i "/import dotenv/a\
+import lessonRoute from './server/ai-lesson.js';" index.js
+sed -i "/app.use(express.json());/a\
+app.use(lessonRoute);" index.js
+
+# 4. Add route to AdminPanel (Teacher Tab)
+sed -i '/TeacherDashboard/a\
+import AILessonBuilder from "../components/Lessons/AILessonBuilder";' src/pages/Teacher/Dashboard.jsx
+sed -i '/Teacher! Assign content and track your class./a\
+<AILessonBuilder />' src/pages/Teacher/Dashboard.jsx
+
+# 5. Add Mini-Game Template Component
+echo "import React, { useState } from 'react';
+
+export default function WordMatchGame({ question, answers }) {
+  const [selected, setSelected] = useState('');
+  return (
+    <div className='p-4'>
+      <h2 className='text-lg font-bold'>🧠 Word Match Game</h2>
+      <p>{question}</p>
+      <div className='flex flex-wrap gap-2 mt-2'>
+        {answers.map((a, i) => (
+          <button key={i} onClick={() => setSelected(a)} className='bg-yellow-300 px-3 py-1 rounded'>{a}</button>
+        ))}
+      </div>
+      {selected && <p className='mt-3'>You selected: <strong>{selected}</strong></p>}
+    </div>
+  );
+}" > src/components/Games/WordMatchGame.jsx
+
+# 6. Create game zone route (optional)
+mkdir src/pages/GameZone
+echo "import React from 'react';
+import WordMatchGame from '../../components/Games/WordMatchGame';
+export default function GameZone() {
+  return (
+    <div className='p-4'>
+      <WordMatchGame question='Which fruit is green and spiky?' answers={['Banana', 'Durian', 'Mango', 'Apple']} />
+    </div>
+  );
+}" > src/pages/GameZone/Index.jsx
+
+sed -i '/import StudentDashboard/a\
+import GameZone from "./pages/GameZone/Index";' src/App.jsx
+sed -i '/<Route path="\/student"/a\
+  <Route path="/games" element={<GameZone />} />' src/App.jsx
+
+# 7. Done
+echo "🎮 MONSTER 11 COMPLETE!
+
+✅ AI lesson generator with GPT-4
+✅ Saves lessons directly to Supabase
+✅ Embedded in Teacher Dashboard
+✅ Mini-game engine (template-based)
+✅ /games page with sample WordMatch
+
+Next up: MONSTER 12 — Multiplayer Learning Arena with Live Quiz Battles!
+Type '12' when ready." > DONE_LESSON_ENGINE.txt
