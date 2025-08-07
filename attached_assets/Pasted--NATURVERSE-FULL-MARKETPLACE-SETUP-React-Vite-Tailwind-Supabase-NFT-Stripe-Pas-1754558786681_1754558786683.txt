@@ -1,0 +1,77 @@
+// 🚀 NATURVERSE™ FULL MARKETPLACE SETUP (React + Vite + Tailwind + Supabase + NFT + Stripe)
+// Paste this into Replit AI for full integration in one go.
+
+// ✅ Step 1: Install required packages
+// Run this in the shell:
+npm install @stripe/stripe-js @stripe/react-stripe-js ethers
+
+// ✅ Step 2: Create Stripe utility (src/utils/stripePromise.js)
+import { loadStripe } from '@stripe/stripe-js';
+export const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
+
+// ✅ Step 3: Wrap App in Stripe Elements (App.jsx)
+import { Elements } from '@stripe/react-stripe-js';
+import { stripePromise } from './utils/stripePromise';
+
+<Elements stripe={stripePromise}>
+  <YourAppComponents />
+</Elements>
+
+// ✅ Step 4: CheckoutForm Component (src/components/CheckoutForm.jsx)
+import { useStripe, useElements, CardElement } from '@stripe/react-stripe-js';
+import { useState } from 'react';
+
+const CheckoutForm = ({ item }) => {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    const { error, paymentMethod } = await stripe.createPaymentMethod({
+      type: 'card',
+      card: elements.getElement(CardElement),
+    });
+
+    if (error) alert(error.message);
+    else alert(`Test payment created for ${item.name}`);
+    setLoading(false);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="bg-white p-4 rounded shadow-md">
+      <CardElement className="mb-4 p-2 border" />
+      <button disabled={!stripe || loading} className="bg-green-500 text-white px-4 py-2 rounded">
+        {loading ? "Processing..." : `Buy ${item.name}`}
+      </button>
+    </form>
+  );
+};
+
+export default CheckoutForm;
+
+// ✅ Step 5: NFT Minting Utility (src/utils/nftMint.js)
+import { ethers } from 'ethers';
+const contractAddress = "YOUR_CONTRACT_ADDRESS";
+const abi = [/* your NFT contract ABI */];
+
+export async function mintNFT(account, metadataURI) {
+  const provider = new ethers.BrowserProvider(window.ethereum);
+  const signer = await provider.getSigner();
+  const contract = new ethers.Contract(contractAddress, abi, signer);
+  const tx = await contract.mint(account, metadataURI);
+  await tx.wait();
+  return tx.hash;
+}
+
+// ✅ Step 6: MarketplaceItemCard Component (src/components/MarketplaceItemCard.jsx)
+import CheckoutForm from './CheckoutForm';
+import { mintNFT } from '../utils/nftMint';
+
+export default function MarketplaceItemCard({ item, userAddress }) {
+  return (
+    <div className="bg-white p-4 shadow rounded">
+      <img src={item.image_url} className="w-full h-48 object-cover rounded" />
+      <h2 className="text-lg font-bold mt-2">{item.name}</h2>
+      <p className="text-sm text-gray-600">{item.descrip
