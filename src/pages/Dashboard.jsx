@@ -1,8 +1,11 @@
-
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { Link } from 'react-router-dom'
 import { BookOpen, Trophy, Star, Bell, Award } from 'lucide-react'
+import StoryBuilder from '../components/StoryBuilder/StoryBuilder'
+import Inventory from '../components/Marketplace/Inventory'
+import WeatherWidget from '../components/Weather/WeatherWidget'
+import GiftCodeRedemption from '../components/GiftCode/GiftCodeRedemption'
 
 const Dashboard = () => {
   const { user } = useAuth()
@@ -40,19 +43,19 @@ const Dashboard = () => {
           <div className="text-2xl font-bold">{stats.completedModules}/{stats.totalModules}</div>
           <div className="text-sm">Modules Completed</div>
         </div>
-        
+
         <div className="card text-center bg-gradient-to-br from-blue-400 to-blue-600 text-white">
           <Trophy className="mx-auto mb-2" size={32} />
           <div className="text-2xl font-bold">{stats.quizScore}%</div>
           <div className="text-sm">Average Quiz Score</div>
         </div>
-        
+
         <div className="card text-center bg-gradient-to-br from-purple-400 to-purple-600 text-white">
           <Award className="mx-auto mb-2" size={32} />
           <div className="text-2xl font-bold">{stats.stamps}</div>
           <div className="text-sm">Stamps Collected</div>
         </div>
-        
+
         <div className="card text-center bg-gradient-to-br from-orange-400 to-orange-600 text-white">
           <Star className="mx-auto mb-2" size={32} />
           <div className="text-2xl font-bold">🏆</div>
@@ -100,32 +103,35 @@ const Dashboard = () => {
       </div>
 
       {/* Quick Actions */}
-      <div className="card">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">What would you like to do today?</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Link to="/learning" className="group">
-            <div className="card bg-gradient-to-br from-green-100 to-green-200 hover:from-green-200 hover:to-green-300 transition-all transform group-hover:scale-105">
-              <BookOpen className="mx-auto mb-3 text-nature-green" size={48} />
-              <h3 className="text-xl font-bold text-center text-gray-800">Start Learning</h3>
-              <p className="text-center text-gray-600 mt-2">Explore new storybooks and videos</p>
-            </div>
-          </Link>
-          
-          <Link to="/quizzes" className="group">
-            <div className="card bg-gradient-to-br from-blue-100 to-blue-200 hover:from-blue-200 hover:to-blue-300 transition-all transform group-hover:scale-105">
-              <Trophy className="mx-auto mb-3 text-nature-blue" size={48} />
-              <h3 className="text-xl font-bold text-center text-gray-800">Take a Quiz</h3>
-              <p className="text-center text-gray-600 mt-2">Test your knowledge and earn stamps</p>
-            </div>
-          </Link>
-          
-          <Link to="/avatar" className="group">
-            <div className="card bg-gradient-to-br from-purple-100 to-purple-200 hover:from-purple-200 hover:to-purple-300 transition-all transform group-hover:scale-105">
-              <Star className="mx-auto mb-3 text-nature-purple" size={48} />
-              <h3 className="text-xl font-bold text-center text-gray-800">Customize Avatar</h3>
-              <p className="text-center text-gray-600 mt-2">Create your unique nature explorer</p>
-            </div>
-          </Link>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <Link to="/learning" className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
+          <BookOpen className="h-8 w-8 text-nature-green mb-4" />
+          <h3 className="text-lg font-semibold mb-2">Continue Learning</h3>
+          <p className="text-gray-600">Explore new modules and quizzes</p>
+        </Link>
+
+        <Link to="/marketplace" className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
+          <ShoppingBag className="h-8 w-8 text-nature-green mb-4" />
+          <h3 className="text-lg font-semibold mb-2">Marketplace</h3>
+          <p className="text-gray-600">Buy items with $NATUR tokens</p>
+        </Link>
+
+        <Link to="/profile" className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
+          <User className="h-8 w-8 text-nature-green mb-4" />
+          <h3 className="text-lg font-semibold mb-2">Profile</h3>
+          <p className="text-gray-600">View your progress and stats</p>
+        </Link>
+      </div>
+
+      {/* New Interactive Components */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div className="space-y-6">
+          <StoryBuilder />
+          <GiftCodeRedemption />
+        </div>
+        <div className="space-y-6">
+          <WeatherWidget />
+          <Inventory />
         </div>
       </div>
     </div>
