@@ -1,14 +1,52 @@
 
 <!DOCTYPE html>
-<html lang='en'>
+<html lang="en">
   <head>
-    <meta charset='UTF-8' />
-    <link rel='icon' type='image/svg+xml' href='/favicon.svg' />
-    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Naturverse</title>
+    <meta
+      name="description"
+      content="Naturverse is an immersive educational world bridging nature and technology."
+    />
+    <meta
+      name="keywords"
+      content="Naturverse, education, game, nature, technology"
+    />
+    <meta name="author" content="Naturverse" />
+    <meta property="og:title" content="Naturverse" />
+    <meta
+      property="og:description"
+      content="Immersive educational world bridging nature and technology."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://thenaturverse.com" />
+    <meta property="og:image" content="/logo.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Naturverse" />
+    <meta
+      name="twitter:description"
+      content="Immersive educational world bridging nature and technology."
+    />
+    <meta name="twitter:image" content="/logo.png" />
+    <!-- Google Analytics -->
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=%VITE_GA_MEASUREMENT_ID%"
+    ></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
+      gtag("config", "%VITE_GA_MEASUREMENT_ID%");
+    </script>
   </head>
   <body>
-    <div id='root'></div>
-    <script type='module' src='/src/main.jsx'></script>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
