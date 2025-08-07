@@ -4,9 +4,10 @@
     "build": "vite build",
     "preview": "vite preview",
     "start": "node index.js",
-    "lint": "eslint src/App.jsx"
+    "lint": "eslint src/App.jsx",
+    "test": "echo \"No tests specified\""
   },
-  "name": "naturverse-homepage",
+  "name": "naturverse-site",
   "version": "1.0.0",
   "description": "Local dev server for Naturverse",
   "devDependencies": {
