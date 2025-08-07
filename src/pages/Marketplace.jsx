@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react'
 import { ShoppingCart, Coins, Star, Package, Zap, Crown, Trophy, Gem, Filter, Search } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
-import { ethers } from 'ethers'
+import MarketplaceItemCard from '../components/MarketplaceItemCard'
 
 const Marketplace = () => {
   const [items, setItems] = useState([])
@@ -298,81 +298,14 @@ const Marketplace = () => {
         {/* Items Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredItems.map((item) => (
-            <div key={item.id} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
-              {/* Item Image */}
-              <div className="relative">
-                <img
-                  src={item.image_url}
-                  alt={item.name}
-                  className="w-full h-48 object-cover"
-                />
-                <div className="absolute top-2 right-2">
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRarityColor(item.rarity)}`}>
-                    {item.rarity}
-                  </span>
-                </div>
-                {item.is_nft && (
-                  <div className="absolute top-2 left-2">
-                    <span className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-2 py-1 rounded-full text-xs font-bold">
-                      NFT
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              {/* Item Details */}
-              <div className="p-4">
-                <div className="flex items-center mb-2">
-                  {getCategoryIcon(item.category)}
-                  <span className="ml-2 text-sm text-gray-500">{item.category}</span>
-                </div>
-                
-                <h3 className="text-lg font-bold text-gray-800 mb-2">{item.name}</h3>
-                <p className="text-gray-600 text-sm mb-3 line-clamp-2">{item.description}</p>
-
-                {/* Metadata */}
-                {item.metadata && Object.keys(item.metadata).length > 0 && (
-                  <div className="mb-3 p-2 bg-gray-50 rounded text-xs">
-                    {Object.entries(item.metadata).map(([key, value]) => (
-                      <div key={key} className="flex justify-between">
-                        <span className="text-gray-500 capitalize">{key}:</span>
-                        <span className="text-gray-700">{value}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* Price and Stock */}
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center text-yellow-600">
-                    <Coins className="h-4 w-4 mr-1" />
-                    <span className="font-bold">{item.price_natur}</span>
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    Stock: {item.stock}
-                  </div>
-                </div>
-
-                {/* Buy Button */}
-                <button
-                  onClick={() => purchaseItem(item)}
-                  disabled={purchasing === item.id || item.stock === 0 || userBalance < item.price_natur}
-                  className={`w-full py-2 px-4 rounded-lg font-medium transition-colors ${
-                    item.stock === 0
-                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                      : userBalance < item.price_natur
-                      ? 'bg-red-300 text-red-700 cursor-not-allowed'
-                      : purchasing === item.id
-                      ? 'bg-nature-green/50 text-white cursor-not-allowed'
-                      : 'bg-nature-green hover:bg-nature-green/90 text-white'
-                  }`}
-                >
-                  {purchasing === item.id ? 'Purchasing...' : 
-                   item.stock === 0 ? 'Out of Stock' :
-                   userBalance < item.price_natur ? 'Insufficient Funds' : 'Buy Now'}
-                </button>
-              </div>
-            </div>
+            <MarketplaceItemCard
+              key={item.id}
+              item={item}
+              onPurchaseSuccess={() => {
+                loadMarketItems()
+                loadUserBalance()
+              }}
+            />
           ))}
         </div>
 
