@@ -99,6 +99,15 @@ const Navbar = () => {
             <Link to="/island-builder" className="nav-link">
               🏝️ Island Builder™
             </Link>
+            <Link to="/codex" className="nav-link">
+              📚 Turian's Codex™
+            </Link>
+            <Link to="/story" className="nav-link">
+              🛸 Story Portal™
+            </Link>
+            <Link to="/hub" className="nav-link">
+              🧑‍🤝‍🧑 Player Hub™
+            </Link>
             {user && (
               <button
                 onClick={handleSignOut}
@@ -264,6 +273,30 @@ const Navbar = () => {
               >
                 <User size={20} />
                 <span>Island Builder™</span>
+              </Link>
+              <Link
+                to="/codex"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center space-x-2 text-gray-700 hover:text-nature-green transition-colors"
+              >
+                <User size={20} />
+                <span>Turian's Codex™</span>
+              </Link>
+              <Link
+                to="/story"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center space-x-2 text-gray-700 hover:text-nature-green transition-colors"
+              >
+                <User size={20} />
+                <span>Story Portal™</span>
+              </Link>
+              <Link
+                to="/hub"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center space-x-2 text-gray-700 hover:text-nature-green transition-colors"
+              >
+                <User size={20} />
+                <span>Player Hub™</span>
               </Link>
               <button
                 onClick={handleSignOut}

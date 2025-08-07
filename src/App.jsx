@@ -40,6 +40,9 @@ import MusicZone from './components/MusicZone/MusicZone.jsx';
 import StoryForge from './components/StoryForge/StoryForge.jsx';
 import ARCam from './components/ARCam/ARCam.jsx';
 import IslandBuilder from './components/IslandBuilder/IslandBuilder.jsx';
+import Codex from './components/Codex/Codex.jsx';
+import StoryPortal from './components/StoryPortal/StoryPortal.jsx';
+import PlayerHub from './components/PlayerHub/PlayerHub.jsx';
 
 function AppContent() {
   const { user } = useAuth()
@@ -107,6 +110,9 @@ function AppContent() {
             <Route path="/storyforge" element={<StoryForge />} />
             <Route path="/ar-cam" element={<ARCam />} />
             <Route path="/island-builder" element={<IslandBuilder />} />
+            <Route path="/codex" element={<Codex />} />
+            <Route path="/story" element={<StoryPortal />} />
+            <Route path="/hub" element={<PlayerHub />} />
           </Routes>
 
           {/* Global Inventory Drawer */}
