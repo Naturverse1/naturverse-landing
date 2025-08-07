@@ -448,6 +448,34 @@ if (typeof window === 'undefined') {
     }
   })
 
+  // AI Lesson Generation Route
+  app.post('/api/ai-lesson', async (req, res) => {
+    try {
+      const { topic, region = 'Thailandia', ageGroup = '6-10', language = 'en' } = req.body
+      
+      if (!process.env.OPENAI_API_KEY) {
+        return res.status(500).json({ message: 'OpenAI API key not configured' })
+      }
+      
+      const lessonPrompt = language === 'th' 
+        ? `สร้างบทเรียนเด็กสำหรับหัวข้อ "${topic}" ในภูมิภาค ${region} สำหรับเด็กอายุ ${ageGroup} ปี ตอบกลับเป็น JSON format: {"title": "ชื่อบทเรียน", "summary": "สรุปบทเรียน", "content": "เนื้อหาบทเรียนแบบเต็ม", "activities": ["กิจกรรมที่ 1", "กิจกรรมที่ 2"], "difficulty": "ง่าย/ปานกลาง/ยาก", "duration": นาที}`
+        : `Create an educational lesson for kids about "${topic}" set in the ${region} region for ages ${ageGroup}. Make it engaging, interactive, and culturally relevant. Respond in JSON format: {"title": "Lesson Title", "summary": "Brief lesson summary", "content": "Full lesson content with story elements", "activities": ["Activity 1", "Activity 2", "Activity 3"], "difficulty": "easy/medium/hard", "duration": minutes_number, "assets": ["image1.jpg", "sound1.mp3"]}`
+      
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4",
+        messages: [{ role: "user", content: lessonPrompt }],
+        max_tokens: 1200
+      })
+      
+      const lessonData = JSON.parse(completion.choices[0].message.content)
+      
+      res.json(lessonData)
+    } catch (error) {
+      console.error('AI lesson generation error:', error)
+      res.status(500).json({ message: 'Failed to generate lesson' })
+    }
+  })
+
   // Get User Inventory Route
   app.get('/api/inventory/:userId', async (req, res) => {
     try {
