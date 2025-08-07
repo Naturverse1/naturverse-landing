@@ -183,50 +183,48 @@ export default function BattleArena() {
                   </div>
                 </div>
               )}
-
+              
               {message && (
-                <div className={`p-3 rounded-lg text-center font-semibold ${
-                  message.includes('✅') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                }`}>
-                  {message}
+                <div className='text-center p-3 bg-yellow-50 rounded-lg border-l-4 border-yellow-400'>
+                  <p className='font-semibold text-yellow-800'>{message}</p>
                 </div>
               )}
             </div>
           )}
 
           {/* Leaderboard */}
-          {players.length > 0 && (
-            <div className='mt-6 bg-yellow-50 rounded-lg p-4'>
-              <h3 className='text-lg font-bold mb-3 text-yellow-800'>
-                🏆 Live Leaderboard
-              </h3>
-              <div className='space-y-2'>
-                {players
-                  .sort((a, b) => b.score - a.score)
-                  .slice(0, 5)
-                  .map((player, index) => (
-                    <div
-                      key={player.userId}
-                      className='flex justify-between items-center p-2 bg-white rounded border'
-                    >
-                      <span className='font-medium'>
-                        #{index + 1} {player.name}
-                        {player.userId === user?.id && ' (You)'}
-                      </span>
-                      <span className='font-bold text-purple-600'>
-                        {player.score} pts
-                      </span>
-                    </div>
-                  ))}
-              </div>
+          <div className='mt-8'>
+            <h2 className='text-xl font-bold mb-4 text-center text-purple-800'>
+              🏆 Leaderboard
+            </h2>
+            <div className='bg-gray-50 rounded-lg p-4'>
+              {players.length > 0 ? (
+                <ul className='space-y-2'>
+                  {players
+                    .sort((a, b) => b.score - a.score)
+                    .map((player, index) => (
+                      <li
+                        key={player.userId}
+                        className={`flex justify-between items-center p-2 rounded ${
+                          index === 0 ? 'bg-yellow-100 border-yellow-300' : 'bg-white'
+                        }`}
+                      >
+                        <span className='font-medium'>
+                          {index === 0 ? '👑 ' : `${index + 1}. `}
+                          {player.name}
+                        </span>
+                        <span className='font-bold text-purple-600'>
+                          {player.score} pts
+                        </span>
+                      </li>
+                    ))}
+                </ul>
+              ) : (
+                <p className='text-center text-gray-500'>
+                  No players yet. Be the first to join!
+                </p>
+              )}
             </div>
-          )}
-
-          {/* Instructions */}
-          <div className='mt-6 text-sm text-gray-600 text-center'>
-            <p>💡 Answer questions about nature to earn points!</p>
-            <p>🎯 First to answer correctly gets the points!</p>
-            <p>⚡ Be quick - you have 30 seconds per question!</p>
           </div>
         </div>
       </div>

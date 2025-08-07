@@ -39,13 +39,13 @@ function AppContent() {
       loadGameState(user.id).then((state) => {
         if (state) {
           console.log(`Welcome back to ${state.region || 'The Naturverse'}!`)
-          
+
           // Store game state in sessionStorage for other components to access
           sessionStorage.setItem('gameState', JSON.stringify(state))
-          
+
           // Dispatch custom event to notify components of loaded state
-          window.dispatchEvent(new CustomEvent('gameStateLoaded', { 
-            detail: state 
+          window.dispatchEvent(new CustomEvent('gameStateLoaded', {
+            detail: state
           }))
         } else {
           console.log('Starting fresh adventure in The Naturverse!')
@@ -78,8 +78,8 @@ function AppContent() {
             <Route path="/admin/analytics" element={<AdminPanel />} />
             <Route path="/teacher" element={<TeacherDashboard />} />
             <Route path="/student" element={<StudentDashboard />} />
+          <Route path="/arena" element={<BattleArena />} />
           <Route path="/games" element={<GameZone />} />
-            <Route path="/arena" element={<BattleArena />} />
             <Route path="/library" element={<Library />} />
             <Route path="/guardian" element={<Guardian />} />
             <Route path="/events" element={<Events />} />

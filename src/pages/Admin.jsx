@@ -1,6 +1,6 @@
-
 import React, { useState } from 'react'
 import { Users, BookOpen, MessageSquare, Bell, BarChart3, Settings } from 'lucide-react'
+import QuestionBroadcaster from '../components/Admin/QuestionBroadcaster';
 
 const Admin = () => {
   const [activeTab, setActiveTab] = useState('dashboard')
@@ -44,13 +44,13 @@ const Admin = () => {
           <div className="text-sm">Total Users</div>
           <div className="text-xs mt-1">{stats.activeUsers} active today</div>
         </div>
-        
+
         <div className="card bg-gradient-to-br from-green-400 to-green-600 text-white">
           <BookOpen className="mb-2" size={32} />
           <div className="text-2xl font-bold">{stats.totalModules}</div>
           <div className="text-sm">Learning Modules</div>
         </div>
-        
+
         <div className="card bg-gradient-to-br from-purple-400 to-purple-600 text-white">
           <BarChart3 className="mb-2" size={32} />
           <div className="text-2xl font-bold">{stats.completedQuizzes.toLocaleString()}</div>
@@ -127,7 +127,11 @@ const Admin = () => {
         <h1 className="text-4xl font-bold text-nature-green font-kid-friendly mb-2">
           ⚙️ Admin Panel
         </h1>
-        <p className="text-gray-600">Manage The Naturverse platform</p>
+        <p className='text-gray-600 mb-6'>
+          Welcome to the admin dashboard. Monitor system activity and manage content.
+        </p>
+
+        <QuestionBroadcaster />
       </div>
 
       <div className="flex flex-col lg:flex-row gap-6">
