@@ -1,0 +1,22 @@
+# 1. Install controller + media packages
+npm install react-h5-audio-player gamepad.js react-joyride
+
+# 2. Create directories & component files
+mkdir -p src/components/KaraokeZone src/components/Navatar src/components/Naturversity src/components/PetCompanions src/controllers
+touch src/components/KaraokeZone/Karaoke.jsx \
+      src/components/Navatar/Wardrobe.jsx \
+      src/components/Naturversity/TutorBot.jsx \
+      src/components/PetCompanions/Companion.jsx \
+      src/controllers/GamepadController.js
+
+# 3. Karaoke Zone (mockup)
+echo "import React from 'react'; export default function Karaoke() { return (<div className='p-4 text-center'><h2>🎤 Karaoke Zone</h2><p>Soon you'll sing with Turian and friends!</p><audio controls className='mx-auto mt-4'><source src='/karaoke-demo.mp3' type='audio/mpeg' /></audio></div>); }" > src/components/KaraokeZone/Karaoke.jsx
+
+# 4. Navatar Wardrobe System
+echo "import React, { useState } from 'react'; const outfits = ['🧥 Jungle Cloak', '🎎 Lotus Robe', '🦁 Lion Armor']; export default function Wardrobe() { const [selected, setSelected] = useState(''); return (<div className='p-4'><h2>🎨 Navatar Wardrobe</h2>{outfits.map((item, i) => (<button key={i} className='block my-2 p-2 bg-gray-100 hover:bg-green-200 rounded' onClick={() => setSelected(item)}>{item}</button>))}<div className='mt-4 text-lg'>You selected: <span className='font-bold'>{selected}</span></div></div>); }" > src/components/Navatar/Wardrobe.jsx
+
+# 5. Mini Naturversity AI Tutor
+echo "import React, { useState } from 'react'; export default function TutorBot() { const [q, setQ] = useState(''); const [a, setA] = useState(''); const ask = async () => { const res = await fetch('/api/turian', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: 'Explain to a child: ' + q }) }); const data = await res.json(); setA(data.response); }; return (<div className='p-4'><h2>🎓 Ask Turian</h2><input value={q} onChange={(e) => setQ(e.target.value)} placeholder='Why is the sky blue?' className='p-2 border rounded w-full mb-2' /><button onClick={ask} className='bg-blue-500 text-white px-4 py-2 rounded'>Ask</button><div className='mt-4 text-green-700'>{a}</div></div>); }" > src/components/Naturversity/TutorBot.jsx
+
+# 6. Pet Companions by Region
+echo "import React from
