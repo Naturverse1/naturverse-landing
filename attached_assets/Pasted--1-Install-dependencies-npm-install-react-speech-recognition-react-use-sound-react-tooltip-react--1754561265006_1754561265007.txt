@@ -1,0 +1,32 @@
+# 1. Install dependencies
+npm install react-speech-recognition react-use-sound react-tooltip react-icons
+
+# 2. Create new files
+mkdir -p src/components/Voice src/components/Map src/components/Inventory src/assets/audio
+touch src/components/Voice/VoiceQuest.jsx \
+      src/components/Map/ThailandiaMap.jsx \
+      src/components/Voice/Narrator.jsx \
+      src/components/Inventory/InventoryDrawer.jsx
+
+# 3. Voice-Controlled Quest Component
+echo "import React, { useState } from 'react'; import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition'; const prompts = [{ text: 'You enter the Jungle Trails. Do you go deeper or turn back?', options: ['Go Deeper', 'Turn Back'] }]; export default function VoiceQuest() { const [step, setStep] = useState(0); const [chosen, setChosen] = useState(null); const { transcript, listening, resetTranscript } = useSpeechRecognition(); const current = prompts[step]; const handleChoice = (option) => { setChosen(option); setStep(step + 1); resetTranscript(); }; React.useEffect(() => { if (current && transcript) { current.options.forEach(opt => { if (transcript.toLowerCase().includes(opt.toLowerCase())) handleChoice(opt); }); } }, [transcript]); return (<div className='p-4'><h2>🎤 Voice Quest</h2>{current ? (<><p>{current.text}</p><ul className='mt-4'>{current.options.map(opt => (<li key={opt}><button onClick={() => handleChoice(opt)} className='bg-yellow-100 p-2 m-2 rounded'>{opt}</button></li>))}</ul><button onClick={SpeechRecognition.startListening} className='mt-4 bg-green-300 px-3 py-1 rounded'>🎙️ Speak</button><p className='mt-2 text-sm'>Heard: {transcript}</p></>) : (<p>Quest complete! You chose: {chosen}</p>)}</div>); }" > src/components/Voice/VoiceQuest.jsx
+
+# 4. Narrator Component
+echo "import React from 'react'; export default function Narrator({ text }) { const speak = () => { const msg = new SpeechSynthesisUtterance(text); msg.lang = 'en-US'; window.speechSynthesis.speak(msg); }; return (<button onClick={speak} className='bg-purple-100 text-purple-800 px-3 py-1 rounded mt-2'>🔊 Narrate</button>); }" > src/components/Voice/Narrator.jsx
+
+# 5. Thailandia Map
+echo "import React from 'react'; const regions = ['Jungle Trails', 'Lotus Lake', 'Royal Canopy', 'Spicy Hills']; export default function ThailandiaMap() { return (<div className='p-4'><h2>🗺️ Thailandia</h2><ul>{regions.map(r => (<li key={r}><button className='block bg-blue-100 p-2 m-2 rounded'>{r}</button></li>))}</ul></div>); }" > src/components/Map/ThailandiaMap.jsx
+
+# 6. Inventory Drawer
+echo "import React, { useState } from 'react'; import { FaBackpack } from 'react-icons/fa'; export default function InventoryDrawer() { const [open, setOpen] = useState(false); const items = ['🌰 Magic Seed', '🧿 Quest Token']; return (<div className='fixed bottom-0 right-0 m-4'><button onClick={() => setOpen(!open)} className='bg-orange-300 p-2 rounded-full'><FaBackpack size={24} /></button>{open && (<div className='bg-white border rounded shadow-md p-4 mt-2'><h4 className='mb-2'>🎒 Inventory</h4><ul>{items.map(i => (<li key={i}>{i}</li>))}</ul></div>)}</div>); }" > src/components/Inventory/InventoryDrawer.jsx
+
+# 7. Add routes to App.jsx
+sed -i "1 i\import VoiceQuest from './components/Voice/VoiceQuest';\nimport ThailandiaMap from './components/Map/ThailandiaMap';\nimport InventoryDrawer from './components/Inventory/InventoryDrawer';" src/App.jsx
+
+sed -i 's|</Routes>|  <Route path="/voice" element={<VoiceQuest />} />\n  <Route path="/map" element={<ThailandiaMap />} />\n</Routes>|' src/App.jsx
+
+# 8. Mount inventory drawer globally (end of App.jsx)
+echo -e "\n<InventoryDrawer />" >> src/App.jsx
+
+# 9. Done message
+echo "✅ M
