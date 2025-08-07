@@ -39,6 +39,7 @@ import NatureFit from './components/NatureFit/NatureFit.jsx';
 import MusicZone from './components/MusicZone/MusicZone.jsx';
 import StoryForge from './components/StoryForge/StoryForge.jsx';
 import ARCam from './components/ARCam/ARCam.jsx';
+import IslandBuilder from './components/IslandBuilder/IslandBuilder.jsx';
 
 function AppContent() {
   const { user } = useAuth()
@@ -105,6 +106,7 @@ function AppContent() {
             <Route path="/musiczone" element={<MusicZone />} />
             <Route path="/storyforge" element={<StoryForge />} />
             <Route path="/ar-cam" element={<ARCam />} />
+            <Route path="/island-builder" element={<IslandBuilder />} />
           </Routes>
 
           {/* Global Inventory Drawer */}

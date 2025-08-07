@@ -96,6 +96,9 @@ const Navbar = () => {
             <Link to="/ar-cam" className="nav-link">
               🎭 AR Camera™
             </Link>
+            <Link to="/island-builder" className="nav-link">
+              🏝️ Island Builder™
+            </Link>
             {user && (
               <button
                 onClick={handleSignOut}
@@ -253,6 +256,14 @@ const Navbar = () => {
               >
                 <User size={20} />
                 <span>AR Camera™</span>
+              </Link>
+              <Link
+                to="/island-builder"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center space-x-2 text-gray-700 hover:text-nature-green transition-colors"
+              >
+                <User size={20} />
+                <span>Island Builder™</span>
               </Link>
               <button
                 onClick={handleSignOut}
