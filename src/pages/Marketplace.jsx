@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react'
 import { ShoppingCart, Coins, Star, Package, Zap, Crown, Trophy, Gem, Filter, Search } from 'lucide-react'
 import { supabase } from '../lib/supabase'
@@ -248,7 +247,7 @@ const Marketplace = () => {
               Balance: {userBalance} $NATUR
             </span>
           </div>
-          
+
           {!walletConnected ? (
             <button
               onClick={connectWallet}

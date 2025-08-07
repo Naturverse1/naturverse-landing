@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react'
 import { Plus, Edit, Trash2, Save, X, Package, Coins, Star } from 'lucide-react'
 import { supabase } from '../lib/supabase'
@@ -48,7 +47,7 @@ const MarketplaceAdmin = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
+
     try {
       const itemData = {
         ...formData,
@@ -101,7 +100,7 @@ const MarketplaceAdmin = () => {
         .eq('id', id)
 
       if (error) throw error
-      
+
       loadItems()
       alert('Item deleted successfully!')
     } catch (error) {
