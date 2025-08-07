@@ -84,6 +84,9 @@ const Navbar = () => {
             <Link to="/parents" className="nav-link">
               🛡️ Parent Dashboard
             </Link>
+            <Link to="/naturefit" className="nav-link">
+              🌿 NatureFit™
+            </Link>
             {user && (
               <button
                 onClick={handleSignOut}
@@ -209,6 +212,14 @@ const Navbar = () => {
               >
                 <User size={20} />
                 <span>Parent Dashboard</span>
+              </Link>
+              <Link
+                to="/naturefit"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center space-x-2 text-gray-700 hover:text-nature-green transition-colors"
+              >
+                <User size={20} />
+                <span>NatureFit™</span>
               </Link>
               <button
                 onClick={handleSignOut}
