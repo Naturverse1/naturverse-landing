@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { User, Mail, Eye, EyeOff } from 'lucide-react'
 
 const Home = () => {
-  const { user, signIn, signUp, signInWithGoogle, signInAsGuest } = useAuth()
+  const { user, signInWithEmail, signUpWithEmail } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isSignUp, setIsSignUp] = useState(false)
@@ -26,8 +26,8 @@ const Home = () => {
 
     try {
       const { error } = isSignUp 
-        ? await signUp(email, password)
-        : await signIn(email, password)
+        ? await signUpWithEmail(email, password)
+        : await signInWithEmail(email, password)
 
       if (error) {
         setError(error.message)
@@ -40,17 +40,11 @@ const Home = () => {
   }
 
   const handleGoogleSignIn = async () => {
-    setLoading(true)
-    const { error } = await signInWithGoogle()
-    if (error) {
-      setError(error.message)
-    }
-    setLoading(false)
+    setError('Google sign-in coming soon!')
   }
 
   const handleGuestSignIn = () => {
-    signInAsGuest()
-    navigate('/dashboard')
+    setError('Guest mode coming soon!')
   }
 
   return (
