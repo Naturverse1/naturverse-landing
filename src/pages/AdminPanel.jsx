@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { Tab } from '@headlessui/react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import AnalyticsDashboard from '../components/admin/AnalyticsDashboard'
 import { 
   FiUsers, 
   FiPackage, 
@@ -46,6 +47,7 @@ export default function AdminPanel() {
 
   const tabCategories = [
     { name: 'Dashboard', icon: FiBarChart3 },
+    { name: 'Analytics', icon: FiBarChart3 },
     { name: 'Users', icon: FiUsers },
     { name: 'Marketplace', icon: FiShoppingBag },
     { name: 'Learning', icon: FiPackage },
@@ -287,8 +289,9 @@ export default function AdminPanel() {
   const renderContent = () => {
     switch (activeTab) {
       case 0: return renderDashboard()
-      case 1: return renderUsers()
-      case 2: return renderMarketplace()
+      case 1: return <AnalyticsDashboard />
+      case 2: return renderUsers()
+      case 3: return renderMarketplace()
       default: return (
         <div className="bg-white rounded-lg shadow-lg p-8 text-center">
           <div className="text-gray-500">
