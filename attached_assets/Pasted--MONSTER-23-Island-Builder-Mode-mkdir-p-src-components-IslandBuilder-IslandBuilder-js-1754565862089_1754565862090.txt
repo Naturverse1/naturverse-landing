@@ -1,0 +1,113 @@
+# MONSTER 23: Island Builder Mode
+
+mkdir -p src/components/IslandBuilder
+
+# --- IslandBuilder.jsx ---
+cat << 'EOF' > src/components/IslandBuilder/IslandBuilder.jsx
+import { useRef, useState } from "react";
+import html2canvas from "html2canvas";
+import { supabase } from "../../supabaseClient";
+
+const TILE_OPTIONS = [
+  { name: "Land", emoji: "🌿" },
+  { name: "Water", emoji: "🌊" },
+  { name: "Tree", emoji: "🌴" },
+  { name: "House", emoji: "🏠" },
+  { name: "Animal", emoji: "🦜" },
+];
+
+const IslandBuilder = () => {
+  const gridRef = useRef(null);
+  const [tile, setTile] = useState("🌿");
+  const [islandName, setIslandName] = useState("");
+  const [placing, setPlacing] = useState(false);
+  const [grid, setGrid] = useState(Array(10).fill(Array(10).fill("")));
+
+  const handlePlace = (rowIdx, colIdx) => {
+    const newGrid = grid.map((row, r) =>
+      row.map((cell, c) => (r === rowIdx && c === colIdx ? tile : cell))
+    );
+    setGrid(newGrid);
+  };
+
+  const handleExport = async () => {
+    const canvas = await html2canvas(gridRef.current);
+    const blob = await new Promise(res => canvas.toBlob(res));
+    const fileName = `island_${Date.now()}.png`;
+    const { data, error } = await supabase.storage
+      .from("islands")
+      .upload(fileName, blob, { contentType: "image/png" });
+    if (!error) {
+      await supabase.from("islands").insert({
+        name: islandName,
+        image_url: data.path,
+        grid_data: grid,
+      });
+      alert("🏝️ Island exported to Naturverse!");
+    }
+  };
+
+  return (
+    <div className="p-4 text-center">
+      <h2 className="text-3xl font-bold mb-2">🏝️ Island Builder</h2>
+      <input
+        placeholder="Island Name"
+        className="border px-2 py-1 rounded mb-3"
+        value={islandName}
+        onChange={(e) => setIslandName(e.target.value)}
+      />
+      <div className="flex justify-center mb-3">
+        {TILE_OPTIONS.map((t) => (
+          <button
+            key={t.name}
+            onClick={() => setTile(t.emoji)}
+            className={`mx-1 px-3 py-1 rounded ${
+              tile === t.emoji ? "bg-green-600 text-white" : "bg-gray-200"
+            }`}
+          >
+            {t.emoji} {t.name}
+          </button>
+        ))}
+      </div>
+      <div
+        ref={gridRef}
+        className="inline-block border-4 border-green-500 p-2 bg-white"
+      >
+        {grid.map((row, rIdx) => (
+          <div key={rIdx} className="flex">
+            {row.map((cell, cIdx) => (
+              <div
+                key={cIdx}
+                onClick={() => handlePlace(rIdx, cIdx)}
+                className="w-10 h-10 border text-xl flex items-center justify-center cursor-pointer"
+              >
+                {cell}
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+      <button
+        onClick={handleExport}
+        className="mt-4 bg-blue-600 text-white px-4 py-2 rounded"
+      >
+        🚀 Export to Naturverse
+      </button>
+    </div>
+  );
+};
+
+export default IslandBuilder;
+EOF
+
+# --- Add route ---
+sed -i '/react-router-dom/a import IslandBuilder from "./components/IslandBuilder/IslandBuilder.jsx";' src/App.jsx
+sed -i '/<Routes>/a <Route path="/island-builder" element={<IslandBuilder />} />' src/App.jsx
+
+# --- Add Supabase table ---
+curl -s https://raw.githubusercontent.com/openai/chatgpt-naturverse/main/sql/create_islands_table.sql | psql $SUPABASE_URL
+
+# --- Enable Supabase Storage Bucket (manually if not exists) ---
+echo "☑️ If not already set, go to Supabase > Storage > Create bucket named 'islands' (public)"
+
+echo "✅ Island Builder is live at /island-builder — Go create and export your world!"
