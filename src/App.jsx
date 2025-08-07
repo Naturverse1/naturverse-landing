@@ -1,175 +1,18 @@
-import React, { useEffect } from 'react'
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import { Elements } from '@stripe/react-stripe-js'
-import { AuthProvider, useAuth } from './contexts/AuthContext'
-import { stripePromise } from './utils/stripePromise'
-import { loadGameState } from './utils/saveGame'
-import Navbar from './components/Navbar'
-import TurianAI from './components/TurianAI'
-import Home from './pages/Home'
-import Dashboard from './pages/Dashboard'
-import Learning from './pages/Learning'
-import Quizzes from './pages/Quizzes'
-import Profile from './pages/Profile'
-import Admin from './pages/Admin'
-import AdminDashboard from './pages/AdminDashboard'
-import AvatarCreator from './pages/AvatarCreator'
-import Marketplace from './pages/Marketplace'
-import MarketplaceAdmin from './pages/MarketplaceAdmin'
-import MyInventory from './pages/MyInventory'
-import AdminPanel from './pages/AdminPanel'
-import Library from './routes/Library'
-import Guardian from './routes/Guardian'
-import Events from './routes/Events'
-import VoiceQuest from './components/Voice/VoiceQuest'
-import ThailandiaMap from './components/Map/ThailandiaMap'
-import InventoryDrawer from './components/Inventory/InventoryDrawer'
-import RegionStorybook from './components/Storybook/RegionStorybook'
-import SelfieBooth from './components/SelfieCam/SelfieBooth'
-import Trading from './pages/Trading.jsx';
-import StoryMode from './components/StoryMode/StoryMode.jsx';
-import LearningTrack from './pages/LearningTrack.jsx';
-import TurianVoiceChat from './components/TurianChat/TurianVoiceChat.jsx';
-import ParentDashboard from './components/Parents/ParentDashboard.jsx';
-import NatureFit from './components/NatureFit/NatureFit.jsx';
-import MusicZone from './components/MusicZone/MusicZone.jsx';
-import StoryForge from './components/StoryForge/StoryForge.jsx';
-import ARCam from './components/ARCam/ARCam.jsx';
-import IslandBuilder from './components/IslandBuilder/IslandBuilder.jsx';
-import Codex from './components/Codex/Codex.jsx';
-import StoryPortal from './components/StoryPortal/StoryPortal.jsx';
-import PlayerHub from './components/PlayerHub/PlayerHub.jsx';
-import TeacherDashboard from './pages/Teacher/Dashboard'
-import StudentDashboard from './pages/Student/Dashboard'
-import GameZone from './pages/GameZone/Index'
-import BattleArena from './pages/Arena/BattleArena'
-
-function AppContent() {
-  const { user } = useAuth()
-
-  useEffect(() => {
-    if (user && !user.isGuest) {
-      loadGameState(user.id).then((state) => {
-        if (state) {
-          console.log(`Welcome back to ${state.region || 'The Naturverse'}!`)
-
-          // Store game state in sessionStorage for other components to access
-          sessionStorage.setItem('gameState', JSON.stringify(state))
-
-          // Dispatch custom event to notify components of loaded state
-          window.dispatchEvent(new CustomEvent('gameStateLoaded', {
-            detail: state
-          }))
-        } else {
-          console.log('Starting fresh adventure in The Naturverse!')
-        }
-      }).catch((error) => {
-        console.error('Failed to load game state:', error)
-      })
-    }
-  }, [user])
-
-  return (
-    <Router>
-      <div className="min-h-screen bg-gradient-to-br from-primary-50 to-blue-50">
-        <Navbar />
-        <main className="container mx-auto px-4 py-8">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/learning" element={<Learning />} />
-            <Route path="/quizzes" element={<Quizzes />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/avatar" element={<AvatarCreator />} />
-            <Route path="/marketplace" element={<Marketplace />} />
-            <Route path="/marketplace/admin" element={<MarketplaceAdmin />} />
-            <Route path="/inventory" element={<MyInventory />} />
-            <Route path="/admin" element={<Admin />} />
-            <Route path="/admin-dashboard" element={<AdminDashboard />} />
-            <Route path="/marketplace-admin" element={<MarketplaceAdmin />} />
-            <Route path="/admin-panel" element={<AdminPanel />} />
-            <Route path="/admin/analytics" element={<AdminPanel />} />
-            <Route path="/teacher" element={<TeacherDashboard />} />
-            <Route path="/student" element={<StudentDashboard />} />
-          <Route path="/arena" element={<BattleArena />} />
-          <Route path="/games" element={<GameZone />} />
-            <Route path="/library" element={<Library />} />
-            <Route path="/guardian" element={<Guardian />} />
-            <Route path="/events" element={<Events />} />
-            <Route path="/voice" element={<VoiceQuest />} />
-            <Route path="/map" element={<ThailandiaMap />} />
-            <Route path="/storybook" element={<RegionStorybook />} />
-            <Route path="/selfie" element={<SelfieBooth />} />
-            <Route path="/trading" element={<Trading />} />
-            <Route path="/storymode" element={<StoryMode />} />
-            <Route path="/learn" element={<LearningTrack />} />
-            <Route path="/talk" element={<TurianVoiceChat />} />
-            <Route path="/parents" element={<ParentDashboard />} />
-            <Route path="/naturefit" element={<NatureFit />} />
-            <Route path="/musiczone" element={<MusicZone />} />
-            <Route path="/storyforge" element={<StoryForge />} />
-            <Route path="/ar-cam" element={<ARCam />} />
-            <Route path="/island-builder" element={<IslandBuilder />} />
-            <Route path="/codex" element={<Codex />} />
-            <Route path="/story" element={<StoryPortal />} />
-            <Route path="/hub" element={<PlayerHub />} />
-          </Routes>
-
-          {/* Global Inventory Drawer */}
-          <InventoryDrawer />
-        </main>
-        <TurianAI />
-      </div>
-    </Router>
-  )
-}
-
-// Error Boundary Component
-class ErrorBoundary extends React.Component {
-  constructor(props) {
-    super(props)
-    this.state = { hasError: false, error: null }
-  }
-
-  static getDerivedStateFromError(error) {
-    return { hasError: true, error }
-  }
-
-  componentDidCatch(error, errorInfo) {
-    console.error('App Error:', error, errorInfo)
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-100">
-          <div className="text-center p-8">
-            <h1 className="text-2xl font-bold text-red-600 mb-4">Something went wrong!</h1>
-            <p className="text-gray-600 mb-4">{this.state.error?.message}</p>
-            <button 
-              onClick={() => window.location.reload()} 
-              className="bg-blue-500 text-white px-4 py-2 rounded"
-            >
-              Reload Page
-            </button>
-          </div>
-        </div>
-      )
-    }
-
-    return this.props.children
-  }
-}
+import './App.css'
 
 function App() {
+  const handleClick = () => alert('Coming Soon!')
+
   return (
-    <Elements stripe={stripePromise}>
-      <AuthProvider>
-        <ErrorBoundary>
-          <AppContent />
-        </ErrorBoundary>
-      </AuthProvider>
-    </Elements>
+    <div className="app">
+      <h1>🌍 Welcome to The Naturverse™</h1>
+      <h2>A Magical World of Learning</h2>
+      <img src="/logo.png" alt="Naturverse logo" className="logo" />
+      <p>🚀 Explore our kingdoms, create your Navatar, and start your journey.</p>
+      <button className="cta" onClick={handleClick}>
+        Enter The Naturverse
+      </button>
+    </div>
   )
 }
 
