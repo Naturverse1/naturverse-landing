@@ -314,6 +314,74 @@ if (typeof window === 'undefined') {
     }
   })
 
+  // Crafting Route
+  app.post('/api/craft', async (req, res) => {
+    try {
+      const { userId, recipeId } = req.body
+      const { createClient } = require('@supabase/supabase-js')
+      const supabase = createClient(
+        process.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co',
+        process.env.VITE_SUPABASE_ANON_KEY || 'placeholder'
+      )
+
+      // Get recipe
+      const { data: recipe, error: recipeError } = await supabase
+        .from('item_recipes')
+        .select('*')
+        .eq('id', recipeId)
+        .single()
+
+      if (recipeError || !recipe) {
+        return res.status(404).json({ error: 'Recipe not found' })
+      }
+
+      // Get user inventory
+      const { data: inventory, error: invError } = await supabase
+        .from('user_inventory')
+        .select('*')
+        .eq('user_id', userId)
+
+      if (invError) throw invError
+
+      // Check if user has required items
+      const requirements = JSON.parse(recipe.required_items)
+      for (let req of requirements) {
+        const invItem = inventory.find(i => i.item_id === req.item_id)
+        if (!invItem || invItem.quantity < req.quantity) {
+          return res.status(400).json({ error: 'Insufficient materials' })
+        }
+      }
+
+      // Deduct required items
+      for (let req of requirements) {
+        await supabase.rpc('decrease_item_quantity', {
+          user_id_input: userId,
+          item_id_input: req.item_id,
+          amount: req.quantity
+        })
+      }
+
+      // Add crafted item to inventory
+      const { error: craftError } = await supabase
+        .from('user_inventory')
+        .upsert({
+          user_id: userId,
+          item_id: recipe.output_item_id,
+          quantity: 1
+        }, {
+          onConflict: 'user_id,item_id',
+          update: { quantity: 'user_inventory.quantity + 1' }
+        })
+
+      if (craftError) throw craftError
+
+      res.json({ success: true, message: 'Item crafted successfully!' })
+    } catch (error) {
+      console.error('Crafting error:', error)
+      res.status(500).json({ message: 'Failed to craft item' })
+    }
+  })
+
   // Mint Badge Route
   app.post('/api/mint-badge', async (req, res) => {
     try {

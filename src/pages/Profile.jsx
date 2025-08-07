@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { User, Award, Trophy, Star, Edit2, Save } from 'lucide-react'
 import ConnectWallet from '../components/ConnectWallet'
 import BadgeDisplay from '../components/Badges/BadgeDisplay'
+import InventoryDisplay from '../components/Inventory/InventoryDisplay'
 
 const Profile = () => {
   const { user } = useAuth()
@@ -183,6 +184,14 @@ const Profile = () => {
             🏅 Your NFT Badges
           </h2>
           <BadgeDisplay userId={user?.id} />
+        </div>
+
+        {/* Inventory Section */}
+        <div className="card mt-8">
+          <h2 className="text-2xl font-bold text-nature-green mb-4">
+            🎒 Your Inventory
+          </h2>
+          <InventoryDisplay userId={user?.id} />
         </div>
       </div>
     </div>
