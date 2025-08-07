@@ -1,0 +1,116 @@
+# 🧙 MONSTER 18: PARENT DASH + VOICE CHAT MODE
+
+# Setup folders
+mkdir -p src/components/Parents src/components/TurianChat
+
+# --- ParentDashboard.jsx ---
+cat << 'EOF' > src/components/Parents/ParentDashboard.jsx
+import { useEffect, useState } from 'react';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY);
+
+const ParentDashboard = () => {
+  const [users, setUsers] = useState([]);
+
+  useEffect(() => {
+    const fetchProgress = async () => {
+      const { data } = await supabase.from('users').select('username, email, learning_track, created_at');
+      setUsers(data || []);
+    };
+    fetchProgress();
+  }, []);
+
+  return (
+    <div className="p-6">
+      <h1 className="text-3xl font-bold mb-4">🛡️ Parent Dashboard</h1>
+      <table className="w-full bg-white rounded shadow">
+        <thead>
+          <tr className="bg-gray-200 text-left">
+            <th className="p-2">👤 Username</th>
+            <th className="p-2">📧 Email</th>
+            <th className="p-2">📚 Track</th>
+            <th className="p-2">📅 Joined</th>
+          </tr>
+        </thead>
+        <tbody>
+          {users.map((u, i) => (
+            <tr key={i} className="border-t">
+              <td className="p-2">{u.username}</td>
+              <td className="p-2">{u.email}</td>
+              <td className="p-2">{u.learning_track}</td>
+              <td className="p-2">{new Date(u.created_at).toLocaleDateString()}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
+export default ParentDashboard;
+EOF
+
+# --- TurianVoiceChat.jsx ---
+cat << 'EOF' > src/components/TurianChat/TurianVoiceChat.jsx
+import { useEffect, useRef, useState } from 'react';
+import { useSpeechSynthesis, useSpeechRecognition } from 'react-speech-kit';
+
+const TurianVoiceChat = () => {
+  const [messages, setMessages] = useState([]);
+  const [listening, setListening] = useState(false);
+  const { speak, voices } = useSpeechSynthesis();
+  const { listen, stop, supported } = useSpeechRecognition({
+    onResult: async (text) => {
+      setMessages(prev => [...prev, { role: 'user', content: text }]);
+      const res = await fetch('/api/turian', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: [...messages, { role: 'user', content: text }] })
+      });
+      const data = await res.json();
+      const reply = data.response;
+      setMessages(prev => [...prev, { role: 'assistant', content: reply }]);
+      speak({ text: reply, voice: voices.find(v => v.lang.includes('en')) });
+    }
+  });
+
+  const toggleListening = () => {
+    if (listening) {
+      stop();
+      setListening(false);
+    } else {
+      listen();
+      setListening(true);
+    }
+  };
+
+  return (
+    <div className="p-6 max-w-xl mx-auto text-center">
+      <h1 className="text-3xl font-bold mb-4">🎤 Talk to Turian</h1>
+      <button
+        onClick={toggleListening}
+        className={`px-6 py-3 rounded text-white font-bold ${listening ? 'bg-red-500' : 'bg-green-500'}`}
+      >
+        {listening ? '🛑 Stop Listening' : '🎙️ Start Talking'}
+      </button>
+
+      <div className="mt-6 bg-white p-4 rounded shadow text-left">
+        {messages.map((m, i) => (
+          <p key={i}><strong>{m.role === 'user' ? 'You' : 'Turian'}:</strong> {m.content}</p>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default TurianVoiceChat;
+EOF
+
+# --- Update App.jsx routes ---
+sed -i '/import { BrowserRouter as Router, Route, Routes } from "react-router-dom";/a import TurianVoiceChat from "./components/TurianChat/TurianVoiceChat.jsx";\nimport ParentDashboard from "./components/Parents/ParentDashboard.jsx";' src/App.jsx
+sed -i '/<Routes>/a <Route path="/talk" element={<TurianVoiceChat />} />\n<Route path="/parents" element={<ParentDashboard />} />' src/App.jsx
+
+# ✅ Done!
+echo "🛡️ Parent Dashboard → /parents"
+echo "🎤 Turian Voice Chat Mode → /talk"
