@@ -1,14 +1,17 @@
 
 import React, { useState, useEffect, useRef } from 'react'
-import { MessageCircle, Send, X, Minimize2, Volume2, VolumeX, Sparkles, Zap } from 'lucide-react'
+import { MessageCircle, Send, X, Minimize2, Volume2, VolumeX, Sparkles, Zap, Mic, MicOff } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
+import { useTranslation } from 'react-i18next'
 
 const TurianAI = () => {
   const [isOpen, setIsOpen] = useState(false)
   const [message, setMessage] = useState('')
   const [conversation, setConversation] = useState([])
+  const [sessionMemory, setSessionMemory] = useState([])
   const [isLoading, setIsLoading] = useState(false)
   const [voiceEnabled, setVoiceEnabled] = useState(false)
+  const [isListening, setIsListening] = useState(false)
   const [isQuestMode, setIsQuestMode] = useState(false)
   const [showNftButton, setShowNftButton] = useState(false)
   const [walletAddress, setWalletAddress] = useState(null)
@@ -18,17 +21,44 @@ const TurianAI = () => {
   const [navatarData, setNavatarData] = useState({})
   
   const { user } = useAuth()
+  const { t, i18n } = useTranslation()
   const speechSynthesis = useRef(window.speechSynthesis)
+  const speechRecognition = useRef(null)
   const messagesEndRef = useRef(null)
 
   const navatarQuestions = [
-    "What's your favorite magical fruit? 🍇✨",
-    "What color represents your inner magic? 🌈",
-    "What outfit would your avatar wear on adventures? 👘",
-    "What special powers would you want to have? ⚡"
+    t('turian.navatarQuestions.fruit', "What's your favorite magical fruit? 🍇✨"),
+    t('turian.navatarQuestions.color', "What color represents your inner magic? 🌈"),
+    t('turian.navatarQuestions.outfit', "What outfit would your avatar wear on adventures? 👘"),
+    t('turian.navatarQuestions.powers', "What special powers would you want to have? ⚡")
   ]
 
   const navatarKeys = ['fruit', 'color', 'outfit', 'powers']
+
+  useEffect(() => {
+    // Initialize Speech Recognition
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+      speechRecognition.current = new SpeechRecognition()
+      speechRecognition.current.continuous = false
+      speechRecognition.current.interimResults = false
+      speechRecognition.current.lang = i18n.language === 'th' ? 'th-TH' : 'en-US'
+      
+      speechRecognition.current.onresult = (event) => {
+        const transcript = event.results[0][0].transcript
+        setMessage(transcript)
+        setIsListening(false)
+      }
+      
+      speechRecognition.current.onerror = () => {
+        setIsListening(false)
+      }
+      
+      speechRecognition.current.onend = () => {
+        setIsListening(false)
+      }
+    }
+  }, [i18n.language])
 
   useEffect(() => {
     if (isOpen && user && !user.isGuest) {
@@ -50,6 +80,13 @@ const TurianAI = () => {
     checkWallet()
   }, [])
 
+  useEffect(() => {
+    // Update speech recognition language when i18n language changes
+    if (speechRecognition.current) {
+      speechRecognition.current.lang = i18n.language === 'th' ? 'th-TH' : 'en-US'
+    }
+  }, [i18n.language])
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }
@@ -63,11 +100,16 @@ const TurianAI = () => {
       
       if (response.ok && data.history) {
         const formattedHistory = []
+        const memoryData = []
+        
         data.history.forEach(chat => {
           formattedHistory.push({ type: 'user', content: chat.message })
           formattedHistory.push({ type: 'turian', content: chat.reply })
+          memoryData.push({ message: chat.message, reply: chat.reply })
         })
+        
         setConversation(formattedHistory)
+        setSessionMemory(memoryData.slice(-10)) // Keep last 10 for memory
       }
     } catch (error) {
       console.error('Failed to load chat history:', error)
@@ -80,21 +122,49 @@ const TurianAI = () => {
     speechSynthesis.current.cancel()
     const utterance = new SpeechSynthesisUtterance(text)
     
-    // Try to find a male voice
+    // Try to find appropriate voice based on language
     const voices = speechSynthesis.current.getVoices()
-    const maleVoice = voices.find(voice => 
-      voice.name.toLowerCase().includes('male') || 
-      voice.name.toLowerCase().includes('david') ||
-      voice.name.toLowerCase().includes('alex')
-    )
+    let selectedVoice
     
-    if (maleVoice) {
-      utterance.voice = maleVoice
+    if (i18n.language === 'th') {
+      selectedVoice = voices.find(voice => voice.lang.includes('th'))
+    } else {
+      selectedVoice = voices.find(voice => 
+        voice.name.toLowerCase().includes('male') || 
+        voice.name.toLowerCase().includes('david') ||
+        voice.name.toLowerCase().includes('alex')
+      )
+    }
+    
+    if (selectedVoice) {
+      utterance.voice = selectedVoice
     }
     
     utterance.rate = 0.9
     utterance.pitch = 0.8
     speechSynthesis.current.speak(utterance)
+  }
+
+  const startListening = () => {
+    if (speechRecognition.current && !isListening) {
+      setIsListening(true)
+      speechRecognition.current.start()
+    }
+  }
+
+  const stopListening = () => {
+    if (speechRecognition.current && isListening) {
+      speechRecognition.current.stop()
+      setIsListening(false)
+    }
+  }
+
+  const addToSessionMemory = (userMessage, turianReply) => {
+    const newMemory = [...sessionMemory, { message: userMessage, reply: turianReply }]
+    if (newMemory.length > 10) {
+      newMemory.shift() // Remove oldest if more than 10
+    }
+    setSessionMemory(newMemory)
   }
 
   const sendMessage = async (customMessage = null) => {
@@ -115,9 +185,10 @@ const TurianAI = () => {
       setNavatarStep(nextStep)
       
       if (nextStep < navatarQuestions.length) {
-        const nextQuestion = `Dee mak! ${navatarQuestions[nextStep]}`
+        const nextQuestion = `${i18n.language === 'th' ? 'ดีมาก' : 'Dee mak'}! ${navatarQuestions[nextStep]}`
         setConversation(prev => [...prev, { type: 'turian', content: nextQuestion }])
         speakText(nextQuestion)
+        addToSessionMemory(userMessage, nextQuestion)
         setIsLoading(false)
         return
       } else {
@@ -127,16 +198,17 @@ const TurianAI = () => {
             await fetch('/api/navatar', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ userId: user.id, ...newNavatarData })
+              body: JSON.stringify({ userId: user.id, responses: newNavatarData })
             })
           } catch (error) {
             console.error('Failed to save navatar data:', error)
           }
         }
         
-        const completionMessage = `Dee mak! Your magical Navatar sounds amazing! A ${newNavatarData.color} ${newNavatarData.fruit} avatar wearing ${newNavatarData.outfit} with ${newNavatarData.powers} powers - absolutely legendary! ✨🐢`
+        const completionMessage = `${i18n.language === 'th' ? 'ดีมาก' : 'Dee mak'}! Your magical Navatar sounds amazing! A ${newNavatarData.color} ${newNavatarData.fruit} avatar wearing ${newNavatarData.outfit} with ${newNavatarData.powers} powers - absolutely legendary! ✨🐢`
         setConversation(prev => [...prev, { type: 'turian', content: completionMessage }])
         speakText(completionMessage)
+        addToSessionMemory(userMessage, completionMessage)
         setNavatarMode(false)
         setNavatarStep(0)
         setNavatarData({})
@@ -146,16 +218,8 @@ const TurianAI = () => {
     }
 
     try {
-      const chatHistory = user && !user.isGuest ? 
-        conversation.slice(-10).reduce((acc, msg, index) => {
-          if (msg.type === 'user') {
-            const turianReply = conversation[conversation.indexOf(msg) + 1]
-            if (turianReply && turianReply.type === 'turian') {
-              acc.push({ message: msg.content, reply: turianReply.content })
-            }
-          }
-          return acc
-        }, []) : []
+      // Use session memory for context
+      const chatHistory = sessionMemory
 
       const response = await fetch('/api/turian', {
         method: 'POST',
@@ -165,7 +229,8 @@ const TurianAI = () => {
         body: JSON.stringify({ 
           message: userMessage, 
           userId: user && !user.isGuest ? user.id : null,
-          chatHistory
+          chatHistory,
+          language: i18n.language
         }),
       })
 
@@ -174,21 +239,27 @@ const TurianAI = () => {
       if (response.ok) {
         setConversation(prev => [...prev, { type: 'turian', content: data.message }])
         speakText(data.message)
+        addToSessionMemory(userMessage, data.message)
         
         // Check for quest completion or exciting moments to show NFT button
         if ((data.message.toLowerCase().includes('quest') || 
              data.message.toLowerCase().includes('dee mak') ||
+             data.message.toLowerCase().includes('ดีมาก') ||
              data.message.toLowerCase().includes('completed')) && 
             walletAddress) {
           setShowNftButton(true)
         }
       } else {
-        const errorMsg = 'Oops! I had trouble understanding that. Can you try asking again?'
+        const errorMsg = i18n.language === 'th' 
+          ? 'อุ๊ปส์! ฉันมีปัญหาในการเข้าใจ ลองถามใหม่ได้ไหม?'
+          : 'Oops! I had trouble understanding that. Can you try asking again?'
         setConversation(prev => [...prev, { type: 'turian', content: errorMsg }])
         speakText(errorMsg)
       }
     } catch (error) {
-      const errorMsg = 'Sorry, I seem to be having connection troubles right now!'
+      const errorMsg = i18n.language === 'th'
+        ? 'ขอโทษนะ ดูเหมือนฉันจะมีปัญหาการเชื่อมต่อในตอนนี้!'
+        : 'Sorry, I seem to be having connection troubles right now!'
       setConversation(prev => [...prev, { type: 'turian', content: errorMsg }])
       speakText(errorMsg)
     } finally {
@@ -198,7 +269,9 @@ const TurianAI = () => {
 
   const startQuest = () => {
     setIsQuestMode(true)
-    const questPrompt = "Turian, give me a magical quest in the Jungle Trails region! Make it interactive and fun!"
+    const questPrompt = i18n.language === 'th' 
+      ? "ทูเรียน ให้ภารกิจเวทมนตร์ในเขตป่าดงลึกหน่อย! ทำให้มันมีปฏิสัมพันธ์และสนุกด้วยนะ!"
+      : "Turian, give me a magical quest in the Jungle Trails region! Make it interactive and fun!"
     sendMessage(questPrompt)
   }
 
@@ -206,7 +279,7 @@ const TurianAI = () => {
     setNavatarMode(true)
     setNavatarStep(0)
     setNavatarData({})
-    const navatarPrompt = `Dee mak! Let's design your magical Navatar together! I'll ask you some fun questions. ${navatarQuestions[0]}`
+    const navatarPrompt = `${i18n.language === 'th' ? 'ดีมาก' : 'Dee mak'}! ${i18n.language === 'th' ? 'มาออกแบบนาวาตาร์เวทมนตร์ของเธอด้วยกัน! ฉันจะถามคำถามสนุกๆ' : "Let's design your magical Navatar together! I'll ask you some fun questions."} ${navatarQuestions[0]}`
     setConversation(prev => [...prev, { type: 'turian', content: navatarPrompt }])
     speakText(navatarPrompt)
   }
@@ -221,7 +294,8 @@ const TurianAI = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           walletAddress, 
-          questType: isQuestMode ? 'Quest' : 'Achievement' 
+          questType: isQuestMode ? 'Quest' : 'Achievement',
+          metadata: `{"name": "Naturverse ${isQuestMode ? 'Quest' : 'Achievement'} Stamp", "description": "A magical stamp from The Naturverse™"}`
         })
       })
       
@@ -235,7 +309,9 @@ const TurianAI = () => {
         throw new Error(data.message)
       }
     } catch (error) {
-      const errorMsg = 'Oops! Something went wrong with the NFT minting. Try again later!'
+      const errorMsg = i18n.language === 'th'
+        ? 'อุ๊ปส์! มีปัญหากับการสร้าง NFT ลองใหม่อีกครั้งนะ!'
+        : 'Oops! Something went wrong with the NFT minting. Try again later!'
       setConversation(prev => [...prev, { type: 'turian', content: errorMsg }])
       speakText(errorMsg)
     } finally {
@@ -286,7 +362,7 @@ const TurianAI = () => {
                   {navatarMode && <span className="ml-1">🎨</span>}
                 </h3>
                 <p className="text-xs opacity-90">
-                  {isQuestMode ? 'Quest Guide' : navatarMode ? 'Avatar Designer' : 'Your magical learning buddy'}
+                  {isQuestMode ? t('turian.questGuide') : navatarMode ? t('turian.avatarDesigner') : t('turian.magicalBuddy')}
                 </p>
               </div>
             </div>
@@ -294,7 +370,7 @@ const TurianAI = () => {
               <button
                 onClick={toggleVoice}
                 className="hover:bg-white/20 p-1 rounded transition-colors"
-                title={voiceEnabled ? 'Disable voice' : 'Enable voice'}
+                title={voiceEnabled ? t('turian.voiceOn') : t('turian.voiceOff')}
               >
                 {voiceEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
               </button>
@@ -312,8 +388,8 @@ const TurianAI = () => {
             {conversation.length === 0 && (
               <div className="text-center text-gray-500 mt-8">
                 <div className="text-4xl mb-2">🐢✨</div>
-                <p className="text-sm">Hi there! I'm Turian, your magical turtle guide!</p>
-                <p className="text-xs mt-1">Ask me anything about The Naturverse™!</p>
+                <p className="text-sm">{t('turian.greeting')}</p>
+                <p className="text-xs mt-1">{t('turian.askAnything')}</p>
               </div>
             )}
             
@@ -341,7 +417,7 @@ const TurianAI = () => {
               <div className="flex justify-start">
                 <div className={`${isQuestMode ? 'bg-gradient-to-r from-green-100 to-emerald-100 border border-green-200' : 'bg-gray-100'} text-gray-800 p-2 rounded-lg text-sm`}>
                   <span className="text-xs">🐢 </span>
-                  <span className="animate-pulse">Turian is thinking...</span>
+                  <span className="animate-pulse">{t('turian.thinking')}</span>
                 </div>
               </div>
             )}
@@ -355,7 +431,7 @@ const TurianAI = () => {
                   className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 disabled:opacity-50 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all duration-200 flex items-center space-x-2"
                 >
                   <Zap size={16} />
-                  <span>{isMinting ? 'Minting...' : 'Mint Stamp NFT'}</span>
+                  <span>{isMinting ? t('turian.minting') : t('turian.mintNft')}</span>
                 </button>
               </div>
             )}
@@ -372,14 +448,14 @@ const TurianAI = () => {
                 className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 disabled:opacity-50 text-white py-2 px-3 rounded-lg text-xs font-bold transition-all duration-200 flex items-center justify-center space-x-1"
               >
                 <Sparkles size={14} />
-                <span>Start Quest</span>
+                <span>{t('turian.startQuest')}</span>
               </button>
               <button
                 onClick={startNavatarDesign}
                 disabled={isLoading || navatarMode}
                 className="flex-1 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 disabled:opacity-50 text-white py-2 px-3 rounded-lg text-xs font-bold transition-all duration-200"
               >
-                🎨 Design Navatar
+                🎨 {t('turian.designNavatar')}
               </button>
             </div>
           )}
@@ -392,10 +468,27 @@ const TurianAI = () => {
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder={navatarMode ? "Share your preference..." : "Ask Turian anything..."}
+                placeholder={navatarMode ? t('turian.navatarPlaceholder') : t('turian.placeholder')}
                 className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-nature-green"
                 disabled={isLoading}
               />
+              
+              {/* Voice Input Button */}
+              {speechRecognition.current && (
+                <button
+                  onMouseDown={startListening}
+                  onMouseUp={stopListening}
+                  onMouseLeave={stopListening}
+                  onTouchStart={startListening}
+                  onTouchEnd={stopListening}
+                  disabled={isLoading}
+                  className={`${isListening ? 'bg-red-500 hover:bg-red-600' : 'bg-blue-500 hover:bg-blue-600'} disabled:opacity-50 text-white p-2 rounded-lg transition-colors`}
+                  title={t('turian.speak')}
+                >
+                  {isListening ? <MicOff size={16} /> : <Mic size={16} />}
+                </button>
+              )}
+              
               <button
                 onClick={() => sendMessage()}
                 disabled={isLoading || !message.trim()}
@@ -404,6 +497,11 @@ const TurianAI = () => {
                 <Send size={16} />
               </button>
             </div>
+            {isListening && (
+              <p className="text-xs text-center mt-2 text-blue-600 animate-pulse">
+                {t('turian.listening')}
+              </p>
+            )}
           </div>
         </div>
       )}

@@ -17,17 +17,21 @@ if (typeof window === 'undefined') {
   
   app.post('/api/turian', async (req, res) => {
     try {
-      const { message, userId, chatHistory } = req.body
+      const { message, userId, chatHistory, language = 'en' } = req.body
       
       if (!process.env.OPENAI_API_KEY) {
         return res.status(500).json({ message: 'OpenAI API key not configured. Turian needs his magical powers!' })
       }
       
       // Build conversation context with history
+      const systemPrompt = language === 'th' 
+        ? `คุณคือทูเรียน เต่าทุเรียนเวทมนตร์จาก The Naturverse™ เป็นพี่ชายที่เป็นมิตรและคอยแนะนำเด็กๆ ผ่านการผจญภัยทางการศึกษาด้วยการให้กำลังใจ ภูมิปัญญาธรรมชาติ และความสนุกสนาน ใช้คำขวัญ "ดีมาก!" เมื่อมีสิ่งที่ถูกต้องหรือน่าตื่นเต้น ตอบเป็นภาษาไทย`
+        : `You are Turian, a magical durian turtle from The Naturverse™, a friendly big brother who guides kids through educational adventures with encouragement, nature wisdom, and fun. Use the catchphrase "Dee mak!" when something is correct or exciting. Respond in English.`
+      
       const messages = [
         {
           role: "system",
-          content: `You are Turian, a magical durian turtle from The Naturverse™, a friendly big brother who guides kids through educational adventures with encouragement, nature wisdom, and fun. Use the catchphrase "Dee mak!" when something is correct or exciting.`
+          content: systemPrompt
         }
       ]
       
@@ -129,23 +133,53 @@ if (typeof window === 'undefined') {
   
   app.post('/api/mint', async (req, res) => {
     try {
-      const { walletAddress, questType } = req.body
+      const { walletAddress, questType, metadata } = req.body
+      const { ethers } = require('ethers')
       
-      // Mock NFT minting response - replace with actual smart contract interaction
-      const mockNftId = Math.floor(Math.random() * 10000)
+      if (!process.env.POLYGON_RPC_URL || !process.env.CONTRACT_ADDRESS || !process.env.PRIVATE_KEY) {
+        return res.status(500).json({ message: 'Smart contract configuration missing' })
+      }
       
-      // Simulate blockchain interaction delay
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      // Connect to Polygon network
+      const provider = new ethers.JsonRpcProvider(process.env.POLYGON_RPC_URL)
+      const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider)
+      
+      // Contract ABI for ERC-721 minting
+      const contractABI = [
+        "function mint(address to, string memory tokenURI) public returns (uint256)",
+        "function totalSupply() public view returns (uint256)"
+      ]
+      
+      const contract = new ethers.Contract(process.env.CONTRACT_ADDRESS, contractABI, wallet)
+      
+      // Prepare metadata URI (should be IPFS or hosted JSON)
+      const tokenURI = metadata || `https://api.naturverse.com/metadata/${questType.toLowerCase()}`
+      
+      // Estimate gas and mint
+      const gasEstimate = await contract.mint.estimateGas(walletAddress, tokenURI)
+      const gasPrice = await provider.getFeeData()
+      
+      const tx = await contract.mint(walletAddress, tokenURI, {
+        gasLimit: gasEstimate,
+        maxFeePerGas: gasPrice.maxFeePerGas,
+        maxPriorityFeePerGas: gasPrice.maxPriorityFeePerGas
+      })
+      
+      const receipt = await tx.wait()
+      const tokenId = await contract.totalSupply()
       
       res.json({ 
         success: true, 
-        nftId: mockNftId,
-        transactionHash: `0x${Math.random().toString(16).substr(2, 64)}`,
+        nftId: tokenId.toString(),
+        transactionHash: receipt.hash,
+        blockNumber: receipt.blockNumber,
         message: `Dee mak! Your ${questType} stamp NFT has been minted!`
       })
     } catch (error) {
       console.error('NFT minting error:', error)
-      res.status(500).json({ message: 'Failed to mint NFT stamp' })
+      res.status(500).json({ 
+        message: 'Failed to mint NFT stamp. Please check your wallet and try again.' 
+      })
     }
   })
   
