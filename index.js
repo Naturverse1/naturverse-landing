@@ -314,6 +314,72 @@ if (typeof window === 'undefined') {
     }
   })
 
+  // Mint Badge Route
+  app.post('/api/mint-badge', async (req, res) => {
+    try {
+      const { userId, badgeName, badgeImage, walletAddress } = req.body
+      
+      if (!process.env.POLYGON_RPC_URL || !process.env.CONTRACT_ADDRESS || !process.env.PRIVATE_KEY) {
+        return res.status(500).json({ message: 'Smart contract configuration missing' })
+      }
+      
+      const { ethers } = require('ethers')
+      const { createClient } = require('@supabase/supabase-js')
+      const supabase = createClient(
+        process.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co',
+        process.env.VITE_SUPABASE_ANON_KEY || 'placeholder'
+      )
+      
+      // Connect to Polygon network
+      const provider = new ethers.JsonRpcProvider(process.env.POLYGON_RPC_URL)
+      const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider)
+      
+      // Contract ABI for ERC-721 minting
+      const contractABI = [
+        "function mint(address to, string memory tokenURI) public returns (uint256)",
+        "function totalSupply() public view returns (uint256)"
+      ]
+      
+      const contract = new ethers.Contract(process.env.CONTRACT_ADDRESS, contractABI, wallet)
+      
+      // Prepare metadata URI
+      const tokenURI = badgeImage || `https://api.naturverse.com/metadata/badge/${badgeName.toLowerCase().replace(/\s+/g, '-')}`
+      
+      // Estimate gas and mint
+      const gasEstimate = await contract.mint.estimateGas(walletAddress, tokenURI)
+      const gasPrice = await provider.getFeeData()
+      
+      const tx = await contract.mint(walletAddress, tokenURI, {
+        gasLimit: gasEstimate,
+        maxFeePerGas: gasPrice.maxFeePerGas,
+        maxPriorityFeePerGas: gasPrice.maxPriorityFeePerGas
+      })
+      
+      const receipt = await tx.wait()
+      const tokenId = await contract.totalSupply()
+      
+      // Update badge as minted in database
+      await supabase
+        .from('user_badges')
+        .update({ minted: true })
+        .eq('user_id', userId)
+        .eq('badge_name', badgeName)
+      
+      res.json({ 
+        success: true, 
+        nftId: tokenId.toString(),
+        transactionHash: receipt.hash,
+        blockNumber: receipt.blockNumber,
+        message: `Dee mak! Your ${badgeName} badge NFT has been minted!`
+      })
+    } catch (error) {
+      console.error('Badge minting error:', error)
+      res.status(500).json({ 
+        message: 'Failed to mint badge NFT. Please check your wallet and try again.' 
+      })
+    }
+  })
+
   // Submit Quiz Route
   app.post('/api/submit-quiz', async (req, res) => {
     try {
@@ -360,6 +426,27 @@ if (typeof window === 'undefined') {
             type: 'quiz',
             amount: rewardAmount,
             description: `Quiz completion: ${score}% on ${topic}`
+          })
+      }
+
+      // Award badges based on performance
+      if (score >= 90) {
+        await supabase
+          .from('user_badges')
+          .insert({
+            user_id: userId,
+            badge_name: `${topic} Master`,
+            badge_image: `https://api.naturverse.com/badges/master-${topic.toLowerCase().replace(/\s+/g, '-')}.png`,
+            minted: false
+          })
+      } else if (score >= 70) {
+        await supabase
+          .from('user_badges')
+          .insert({
+            user_id: userId,
+            badge_name: `${topic} Scholar`,
+            badge_image: `https://api.naturverse.com/badges/scholar-${topic.toLowerCase().replace(/\s+/g, '-')}.png`,
+            minted: false
           })
       }
       

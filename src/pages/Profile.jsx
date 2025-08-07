@@ -1,7 +1,8 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { User, Award, Trophy, Star, Edit2, Save } from 'lucide-react'
 import ConnectWallet from '../components/ConnectWallet'
+import BadgeDisplay from '../components/Badges/BadgeDisplay'
 
 const Profile = () => {
   const { user } = useAuth()
@@ -105,7 +106,7 @@ const Profile = () => {
             </button>
           </div>
         )}
-        
+
         {/* Wallet Connection */}
         <div className="mt-6">
           <h3 className="text-lg font-semibold text-gray-700 mb-2">🔗 Connect Your Wallet</h3>
@@ -175,8 +176,15 @@ const Profile = () => {
           ))}
         </div>
       </div>
+
+        {/* NFT Badges Section */}
+        <div className="card mt-8">
+          <h2 className="text-2xl font-bold text-nature-green mb-4">
+            🏅 Your NFT Badges
+          </h2>
+          <BadgeDisplay userId={user?.id} />
+        </div>
+      </div>
     </div>
   )
 }
-
-export default Profile
