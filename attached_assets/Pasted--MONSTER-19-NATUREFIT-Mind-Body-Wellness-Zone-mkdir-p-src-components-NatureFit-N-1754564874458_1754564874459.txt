@@ -1,0 +1,98 @@
+# MONSTER 19: NATUREFIT™ - Mind + Body Wellness Zone
+
+mkdir -p src/components/NatureFit
+
+# --- NatureFit.jsx ---
+cat << 'EOF' > src/components/NatureFit/NatureFit.jsx
+import { useEffect, useState } from 'react';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY);
+
+const activities = [
+  { name: '🧘 Yoga', duration: 5 },
+  { name: '🤸 Jumping Jacks', duration: 3 },
+  { name: '🧘‍♀️ Meditation', duration: 4 }
+];
+
+const NatureFit = () => {
+  const [current, setCurrent] = useState(null);
+  const [timeLeft, setTimeLeft] = useState(0);
+  const [user, setUser] = useState(null);
+  const [completed, setCompleted] = useState([]);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+    fetchUser();
+  }, []);
+
+  useEffect(() => {
+    if (timeLeft > 0) {
+      const timer = setTimeout(() => setTimeLeft(t => t - 1), 1000);
+      return () => clearTimeout(timer);
+    } else if (current) {
+      setCompleted(prev => [...prev, current.name]);
+      logActivity(current.name);
+      setCurrent(null);
+    }
+  }, [timeLeft]);
+
+  const startActivity = (activity) => {
+    setCurrent(activity);
+    setTimeLeft(activity.duration * 60); // duration in seconds
+  };
+
+  const logActivity = async (activityName) => {
+    await supabase.from('learning_modules').insert({
+      title: activityName,
+      description: 'NatureFit wellness session',
+      content_type: 'exercise',
+      region: 'Lotus Lake',
+      age_group: '6-12',
+      created_by: user?.id
+    });
+  };
+
+  return (
+    <div className="p-6 max-w-xl mx-auto text-center">
+      <h1 className="text-3xl font-bold mb-4">🌿 NatureFit™: Move + Meditate</h1>
+      {!current && (
+        <>
+          <p className="mb-4 text-gray-700">Choose an activity to begin:</p>
+          <div className="flex flex-col gap-3">
+            {activities.map((a, i) => (
+              <button key={i} onClick={() => startActivity(a)} className="bg-green-500 hover:bg-green-600 text-white py-2 rounded">
+                {a.name} – {a.duration} min
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+      {current && (
+        <div className="mt-6">
+          <h2 className="text-2xl">{current.name}</h2>
+          <p className="text-lg mt-2">⏳ {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}</p>
+          <p className="text-sm text-gray-500 mt-2">Relax… Breathe… Turian is with you 🍃</p>
+        </div>
+      )}
+      <div className="mt-8 text-left">
+        <h3 className="font-bold">✅ Completed:</h3>
+        <ul className="list-disc ml-6 text-sm text-gray-600">
+          {completed.map((c, i) => <li key={i}>{c}</li>)}
+        </ul>
+      </div>
+    </div>
+  );
+};
+
+export default NatureFit;
+EOF
+
+# --- Add to App.jsx ---
+sed -i '/react-router-dom/a import NatureFit from "./components/NatureFit/NatureFit.jsx";' src/App.jsx
+sed -i '/<Routes>/a <Route path="/naturefit" element={<NatureFit />} />' src/App.jsx
+
+echo "✅ NatureFit™ activated at /naturefit"
