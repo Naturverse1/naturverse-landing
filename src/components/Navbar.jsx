@@ -19,6 +19,7 @@ const Navbar = () => {
     { to: '/learning', icon: BookOpen, label: 'Learning' },
     { to: '/quizzes', icon: Trophy, label: 'Quizzes' },
     { to: '/profile', icon: User, label: 'Profile' },
+    { to: '/inventory', icon: User, label: 'My Inventory' },
   ] : []
 
   return (

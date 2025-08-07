@@ -1,4 +1,3 @@
-
 import React from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { Elements } from '@stripe/react-stripe-js'
@@ -16,6 +15,7 @@ import AdminDashboard from './pages/AdminDashboard'
 import AvatarCreator from './pages/AvatarCreator'
 import Marketplace from './pages/Marketplace'
 import MarketplaceAdmin from './pages/MarketplaceAdmin'
+import MyInventory from './pages/MyInventory'
 
 function App() {
   return (
@@ -33,6 +33,8 @@ function App() {
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/avatar" element={<AvatarCreator />} />
                 <Route path="/marketplace" element={<Marketplace />} />
+                <Route path="/marketplace/admin" element={<MarketplaceAdmin />} />
+                <Route path="/inventory" element={<MyInventory />} />
                 <Route path="/admin" element={<Admin />} />
                 <Route path="/admin/dashboard" element={<AdminDashboard />} />
                 <Route path="/admin/marketplace" element={<MarketplaceAdmin />} />
