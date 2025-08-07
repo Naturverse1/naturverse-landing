@@ -1,0 +1,121 @@
+# MONSTER 21: STORY FORGE™
+
+mkdir -p src/components/StoryForge
+
+# --- StoryForge.jsx ---
+cat << 'EOF' > src/components/StoryForge/StoryForge.jsx
+import { useState } from "react";
+import { createClient } from "@supabase/supabase-js";
+import { Configuration, OpenAIApi } from "openai";
+
+const supabase = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY);
+const openai = new OpenAIApi(new Configuration({ apiKey: import.meta.env.VITE_OPENAI_API_KEY }));
+
+const StoryForge = () => {
+  const [title, setTitle] = useState("");
+  const [characters, setCharacters] = useState("");
+  const [setting, setSetting] = useState("");
+  const [theme, setTheme] = useState("");
+  const [story, setStory] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const synth = window.speechSynthesis;
+
+  const generateStory = async () => {
+    setLoading(true);
+    setStory("");
+
+    const prompt = `Write a magical children's story called "${title}" featuring: ${characters}, set in ${setting}, with a theme of ${theme}. Make it fun, kind, and easy to read aloud. End with Turian's catchphrase: "Dee mak!"`;
+
+    const response = await openai.createChatCompletion({
+      model: "gpt-4",
+      messages: [
+        { role: "system", content: "You are Turian the Durian, a wise and funny turtle-fruit who writes children's stories with kindness and magic." },
+        { role: "user", content: prompt }
+      ],
+      temperature: 0.7,
+    });
+
+    const storyText = response.data.choices[0].message.content;
+    setStory(storyText);
+    setLoading(false);
+
+    // Save to Supabase
+    await supabase.from("learning_modules").insert({
+      title,
+      description: `AI story about ${theme}`,
+      content_type: "storybook",
+      region: "Thailandia",
+      age_group: "6-10",
+      media_urls: { text: storyText },
+    });
+  };
+
+  const readStory = () => {
+    const utterance = new SpeechSynthesisUtterance(story);
+    utterance.lang = "en-US";
+    utterance.rate = 1;
+    utterance.pitch = 1.2;
+    synth.speak(utterance);
+  };
+
+  return (
+    <div className="max-w-3xl mx-auto p-6">
+      <h1 className="text-4xl font-bold mb-4">📖 Story Forge™</h1>
+      <p className="text-gray-600 mb-6">Let Turian help you write and read your own magical tale!</p>
+
+      <input
+        type="text"
+        placeholder="📝 Title"
+        className="border px-4 py-2 rounded w-full mb-2"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+      />
+      <input
+        type="text"
+        placeholder="🍇 Characters (comma-separated)"
+        className="border px-4 py-2 rounded w-full mb-2"
+        value={characters}
+        onChange={(e) => setCharacters(e.target.value)}
+      />
+      <input
+        type="text"
+        placeholder="🌍 Setting (e.g., Lotus Lake)"
+        className="border px-4 py-2 rounded w-full mb-2"
+        value={setting}
+        onChange={(e) => setSetting(e.target.value)}
+      />
+      <input
+        type="text"
+        placeholder="🎭 Theme (e.g., teamwork, courage)"
+        className="border px-4 py-2 rounded w-full mb-4"
+        value={theme}
+        onChange={(e) => setTheme(e.target.value)}
+      />
+
+      <button onClick={generateStory} disabled={loading} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+        {loading ? "✨ Crafting..." : "📚 Create My Story"}
+      </button>
+
+      {story && (
+        <div className="mt-6 bg-yellow-50 p-4 rounded shadow-lg">
+          <h2 className="text-xl font-bold mb-2">📜 Your Story</h2>
+          <p className="whitespace-pre-wrap text-gray-800">{story}</p>
+
+          <button onClick={readStory} className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+            🔊 Read Aloud
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default StoryForge;
+EOF
+
+# --- Add route to App.jsx ---
+sed -i '/react-router-dom/a import StoryForge from "./components/StoryForge/StoryForge.jsx";' src/App.jsx
+sed -i '/<Routes>/a <Route path="/storyforge" element={<StoryForge />} />' src/App.jsx
+
+echo "✅ Story Forge™ installed at /storyforge"
