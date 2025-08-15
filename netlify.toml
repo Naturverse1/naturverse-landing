@@ -1,7 +1,7 @@
 [build]
-command = "npm run build"
-publish = "web/dist"
-functions = "web/netlify/functions"
+base = "web"
+publish = "dist"
+command = "npm ci && npm run build"
 
 [[redirects]]
 from = "/api/*"
